@@ -45,6 +45,30 @@ function tryDelete(f) {
   try { if (f && fs.existsSync(f)) fs.unlinkSync(f); } catch {}
 }
 
+// Robust JSON extractor — handles trailing commas, extra text, markdown fences
+function extractJSON(text) {
+  // Strip markdown fences
+  text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  // Find the first { ... } block
+  const start = text.indexOf('{');
+  if (start === -1) throw new Error('No JSON object found in response');
+  // Walk to find matching closing brace
+  let depth = 0, i = start, inStr = false, escape = false;
+  for (; i < text.length; i++) {
+    const c = text[i];
+    if (escape) { escape = false; continue; }
+    if (c === '\\' && inStr) { escape = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === '{') depth++;
+    else if (c === '}') { depth--; if (depth === 0) break; }
+  }
+  let json = text.slice(start, i + 1);
+  // Fix trailing commas before } or ]
+  json = json.replace(/,(\s*[}\]])/g, '$1');
+  return JSON.parse(json);
+}
+
 // ── Preset Backgrounds ────────────────────────────────────────
 const PRESETS = {
   minecraft:  {
@@ -529,9 +553,8 @@ Respond with JSON only:
       temperature: 0.8,
     });
 
-    let text = result.choices[0].message.content.trim();
-    text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const parsed = JSON.parse(text);
+    const text = result.choices[0].message.content.trim();
+    const parsed = extractJSON(text);
 
     if (dur) {
       parsed.clips = parsed.clips.map(c => ({
