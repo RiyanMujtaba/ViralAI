@@ -45,27 +45,30 @@ function tryDelete(f) {
   try { if (f && fs.existsSync(f)) fs.unlinkSync(f); } catch {}
 }
 
-// Robust JSON extractor — handles trailing commas, extra text, markdown fences
+// Robust JSON extractor — handles trailing commas, smart quotes, extra text
 function extractJSON(text) {
-  // Strip markdown fences
   text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-  // Find the first { ... } block
+  // Replace smart/curly quotes with straight quotes
+  text = text.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'");
   const start = text.indexOf('{');
-  if (start === -1) throw new Error('No JSON object found in response');
-  // Walk to find matching closing brace
-  let depth = 0, i = start, inStr = false, escape = false;
+  if (start === -1) throw new Error('No JSON found in AI response');
+  // Walk to matching closing brace
+  let depth = 0, i = start, inStr = false, esc = false;
   for (; i < text.length; i++) {
     const c = text[i];
-    if (escape) { escape = false; continue; }
-    if (c === '\\' && inStr) { escape = true; continue; }
-    if (c === '"') { inStr = !inStr; continue; }
-    if (inStr) continue;
+    if (esc)               { esc = false; continue; }
+    if (c === '\\' && inStr) { esc = true; continue; }
+    if (c === '"')           { inStr = !inStr; continue; }
+    if (inStr)               continue;
     if (c === '{') depth++;
     else if (c === '}') { depth--; if (depth === 0) break; }
   }
   let json = text.slice(start, i + 1);
-  // Fix trailing commas before } or ]
-  json = json.replace(/,(\s*[}\]])/g, '$1');
+  json = json.replace(/,(\s*[}\]])/g, '$1');   // trailing commas
+  // Escape unescaped newlines/tabs inside string values
+  json = json.replace(/"((?:[^"\\]|\\.)*)"/g, (_, inner) =>
+    '"' + inner.replace(/\n/g, '\\n').replace(/\r/g, '').replace(/\t/g, ' ') + '"'
+  );
   return JSON.parse(json);
 }
 
@@ -551,6 +554,7 @@ Respond with JSON only:
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.8,
+      response_format: { type: 'json_object' },
     });
 
     const text = result.choices[0].message.content.trim();
