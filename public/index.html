@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ViralAI — Make Viral Shorts</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0a0a0f;--surface:#111118;--card:#1a1a24;--border:#2a2a3a;
+    --accent:#7c3aed;--accent2:#a855f7;--green:#10b981;--red:#ef4444;
+    --text:#f1f1f1;--muted:#888;--radius:14px;
+  }
+  body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh}
+
+  header{padding:20px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+  .logo{font-size:22px;font-weight:800;background:linear-gradient(135deg,#a855f7,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .logo span{font-weight:400;-webkit-text-fill-color:#888;font-size:13px;margin-left:4px}
+
+  .mode-tabs{display:flex;gap:8px;padding:20px 24px 0}
+  .mode-tab{padding:10px 22px;border-radius:30px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+  .mode-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  .main{display:grid;grid-template-columns:1fr 360px;gap:24px;padding:24px;max-width:1200px;margin:0 auto}
+  @media(max-width:900px){.main{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:18px}
+  .card-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+
+  textarea,input[type=text],input[type=url],input[type=number],select{
+    width:100%;background:#0f0f18;border:1.5px solid var(--border);border-radius:10px;
+    color:var(--text);font-size:14px;padding:12px 14px;resize:vertical;outline:none;
+    transition:border-color .2s;font-family:inherit
+  }
+  textarea:focus,input:focus,select:focus{border-color:var(--accent)}
+  textarea{min-height:120px}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  @media(max-width:600px){.grid-3{grid-template-columns:1fr 1fr}.grid-4{grid-template-columns:1fr 1fr}}
+
+  .tile{padding:12px 10px;border:1.5px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;transition:all .2s;font-size:12px;font-weight:600;color:var(--muted)}
+  .tile:hover{border-color:var(--accent);color:var(--text)}
+  .tile.active{border-color:var(--accent2);background:rgba(168,85,247,.12);color:var(--accent2)}
+  .tile .tile-icon{font-size:24px;display:block;margin-bottom:6px}
+
+  .btn{width:100%;padding:14px;border-radius:10px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+  .btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+  .btn-primary:disabled{opacity:.5;transform:none;cursor:not-allowed}
+  .btn-secondary{background:var(--card);border:1.5px solid var(--border);color:var(--text)}
+  .btn-sm{width:auto;padding:8px 16px;font-size:13px;border-radius:8px}
+
+  .upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+  .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(124,58,237,.05)}
+  .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .upload-zone p{color:var(--muted);font-size:13px;margin-top:8px}
+  .upload-zone .uz-icon{font-size:32px}
+  .upload-zone.has-file{border-color:var(--green);background:rgba(16,185,129,.06)}
+  .upload-zone.has-file p{color:var(--green)}
+
+  .bg-tabs{display:flex;gap:6px;margin-bottom:14px}
+  .bg-tab{flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+  .bg-tab.active{border-color:var(--accent);color:var(--accent);background:rgba(124,58,237,.1)}
+
+  .preview-wrap{position:sticky;top:24px}
+  .preview-box{background:#000;border-radius:var(--radius);overflow:hidden;aspect-ratio:9/16;display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+  .preview-box video{width:100%;height:100%;object-fit:cover}
+  .preview-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px}
+  .preview-empty .pe-icon{font-size:48px;margin-bottom:12px;display:block}
+  .download-btn{display:none;width:100%;margin-top:12px;padding:13px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none}
+  .download-btn.show{display:block}
+
+  .yt-url-row{display:flex;gap:10px}
+  .yt-url-row input{flex:1}
+  .clip-cards{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+  .clip-card{background:#0f0f18;border:1.5px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s}
+  .clip-card:hover{border-color:var(--accent)}
+  .clip-card.active{border-color:var(--accent2);background:rgba(168,85,247,.08)}
+  .clip-card .cc-title{font-weight:700;font-size:14px;margin-bottom:4px}
+  .clip-card .cc-time{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .clip-card .cc-hook{font-size:13px;color:#aaa}
+  .clip-card .cc-caption{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:20px;background:rgba(168,85,247,.2);color:var(--accent2);font-size:11px;font-weight:700}
+
+  .progress{display:none;margin-top:12px}
+  .progress.show{display:block}
+  .progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .5s;width:0%}
+  .progress-text{font-size:12px;color:var(--muted);text-align:center}
+
+  .steps{display:flex;gap:6px;margin-bottom:16px}
+  .step{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .3s}
+  .step.done{background:var(--accent2)}
+
+  .label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;margin-top:14px}
+  .label:first-child{margin-top:0}
+
+  .error-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:12px;color:var(--red);font-size:13px;margin-top:12px;display:none}
+  .error-box.show{display:block}
+
+  .mode-section{display:none}
+  .mode-section.active{display:block}
+
+  .video-info-box{background:#0f0f18;border:1px solid var(--border);border-radius:10px;padding:12px;display:none;margin-top:12px}
+  .video-info-box.show{display:flex;gap:12px;align-items:flex-start}
+  .video-info-box img{width:80px;height:50px;border-radius:6px;object-fit:cover;flex-shrink:0}
+  .vi-title{font-size:13px;font-weight:600;margin-bottom:3px}
+  .vi-meta{font-size:11px;color:var(--muted)}
+
+  .pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .pos-btn{padding:8px;border:1.5px solid var(--border);border-radius:7px;text-align:center;cursor:pointer;font-size:16px;transition:all .15s;color:var(--muted)}
+  .pos-btn:hover{border-color:var(--accent);color:var(--text)}
+  .pos-btn.active{border-color:var(--accent2);background:rgba(168,85,247,.15);color:var(--accent2)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ViralAI <span>make it go viral</span></div>
+</header>
+
+<div class="mode-tabs">
+  <button class="mode-tab active" onclick="switchMode('short')">⚡ AI Short</button>
+  <button class="mode-tab" onclick="switchMode('clipper')">✂️ YouTube Clipper</button>
+</div>
+
+<div class="main">
+  <div class="left-col">
+
+    <!-- AI SHORT MODE -->
+    <div id="mode-short" class="mode-section active">
+      <div class="steps">
+        <div class="step done" id="step1"></div>
+        <div class="step" id="step2"></div>
+        <div class="step" id="step3"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📝 Script</div>
+        <span class="label">Style</span>
+        <div class="grid-3" id="style-grid"></div>
+        <span class="label">Topic (optional)</span>
+        <textarea id="topic-input" placeholder="e.g. The guy who accidentally bought a haunted house..." rows="2" style="min-height:60px;margin-bottom:10px"></textarea>
+        <button class="btn btn-secondary btn-sm" onclick="generateScript()" id="gen-btn">✨ Generate Script</button>
+        <span class="label">Script</span>
+        <textarea id="script-input" placeholder="Write or generate your script here..."></textarea>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎬 Background Video</div>
+        <div class="bg-tabs">
+          <button class="bg-tab active" onclick="setBgTab('upload')">Upload</button>
+          <button class="bg-tab" onclick="setBgTab('preset')">Presets</button>
+          <button class="bg-tab" onclick="setBgTab('youtube')">YouTube URL</button>
+        </div>
+
+        <div id="bgtab-upload">
+          <div class="upload-zone" id="bg-zone">
+            <input type="file" id="bg-file" accept="video/*" onchange="fileChosen('bg-zone','bg-file',this)"/>
+            <div class="uz-icon">🎥</div>
+            <strong>Drop video or click to upload</strong>
+            <p>MP4, MOV, AVI — any size</p>
+          </div>
+        </div>
+
+        <div id="bgtab-preset" style="display:none">
+          <div class="grid-3" id="preset-grid"></div>
+          <p style="font-size:12px;color:var(--muted);margin-top:10px">yt-dlp auto-downloads a random clip. Takes ~20s extra.</p>
+        </div>
+
+        <div id="bgtab-youtube" style="display:none">
+          <input type="url" id="bg-yt-url" placeholder="https://youtube.com/watch?v=..."/>
+          <p style="font-size:12px;color:var(--muted);margin-top:8px">Any YouTube video used as background.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎙️ Voice</div>
+        <div class="grid-4" id="voice-grid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💬 Caption Style</div>
+        <div class="grid-4">
+          <div class="tile active" data-cap="default" onclick="selectCap(this)"><span class="tile-icon">✏️</span>Default</div>
+          <div class="tile" data-cap="bold" onclick="selectCap(this)"><span class="tile-icon">💪</span>Bold</div>
+          <div class="tile" data-cap="yellow" onclick="selectCap(this)"><span class="tile-icon">🌟</span>Yellow</div>
+          <div class="tile" data-cap="minimal" onclick="selectCap(this)"><span class="tile-icon">🤍</span>Minimal</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎵 Background Music (optional)</div>
+        <div class="upload-zone" id="music-zone">
+          <input type="file" id="music-file" accept="audio/*" onchange="fileChosen('music-zone','music-file',this)"/>
+          <div class="uz-icon">🎵</div>
+          <strong>Drop music or click to upload</strong>
+          <p>MP3, WAV — mixed at low volume</p>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="createShort()" id="create-btn">🚀 Create Short</button>
+      <div class="progress" id="short-progress">
+        <div class="progress-bar"><div class="progress-fill" id="short-fill"></div></div>
+        <div class="progress-text" id="short-status">Starting...</div>
+      </div>
+      <div class="error-box" id="short-error"></div>
+    </div>
+
+    <!-- YOUTUBE CLIPPER MODE -->
+    <div id="mode-clipper" class="mode-section">
+
+      <div class="card">
+        <div class="card-title">🔗 YouTube Video</div>
+        <div class="yt-url-row">
+          <input type="url" id="yt-url" placeholder="https://youtube.com/watch?v=..."/>
+          <button class="btn btn-primary btn-sm" onclick="analyzeVideo()" id="analyze-btn">Analyze</button>
+        </div>
+        <div class="video-info-box" id="yt-info-box">
+          <img id="yt-thumb" src="" alt=""/>
+          <div>
+            <div class="vi-title" id="yt-title"></div>
+            <div class="vi-meta" id="yt-meta"></div>
+            <div id="transcript-badge" style="display:none;margin-top:5px;font-size:11px;color:var(--green);font-weight:700">✅ Transcript loaded — AI knows what's actually in this video</div>
+            <div id="no-transcript-badge" style="display:none;margin-top:5px;font-size:11px;color:#f59e0b;font-weight:700">⚠️ No transcript — suggestions are estimated</div>
+          </div>
+        </div>
+        <div class="error-box" id="yt-error"></div>
+      </div>
+
+      <div class="card" id="yt-suggestions-card" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin-bottom:0">✨ AI Suggested Clips</div>
+          <button class="btn btn-secondary btn-sm" onclick="moreSuggestions()" id="more-btn">🔄 More</button>
+        </div>
+        <div class="clip-cards" id="clip-cards"></div>
+      </div>
+
+      <div class="card" id="yt-custom-card" style="display:none">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>✂️ Clip Settings</span>
+          <span id="clip-dur-label" style="font-size:12px;color:var(--accent2);font-weight:700"></span>
+        </div>
+        <div class="grid-2">
+          <div>
+            <span class="label">Start (seconds)</span>
+            <input type="number" id="clip-start" placeholder="0" min="0" oninput="updateClipDuration()"/>
+          </div>
+          <div>
+            <span class="label">End (seconds)</span>
+            <input type="number" id="clip-end" placeholder="30" min="1" oninput="updateClipDuration()"/>
+          </div>
+        </div>
+
+        <span class="label">Caption Text (optional)</span>
+        <input type="text" id="clip-caption" placeholder="bro said what"/>
+
+        <div class="grid-2" style="margin-top:14px;gap:14px">
+          <div>
+            <span class="label" style="margin-top:0">Caption Style</span>
+            <div class="grid-2" style="gap:6px">
+              <div class="tile active" data-ycap="default" onclick="selectYCap(this)" style="padding:8px 6px;font-size:11px"><span class="tile-icon" style="font-size:16px">✏️</span>Default</div>
+              <div class="tile" data-ycap="bold" onclick="selectYCap(this)" style="padding:8px 6px;font-size:11px"><span class="tile-icon" style="font-size:16px">💪</span>Bold</div>
+              <div class="tile" data-ycap="yellow" onclick="selectYCap(this)" style="padding:8px 6px;font-size:11px"><span class="tile-icon" style="font-size:16px">🌟</span>Yellow</div>
+              <div class="tile" data-ycap="minimal" onclick="selectYCap(this)" style="padding:8px 6px;font-size:11px"><span class="tile-icon" style="font-size:16px">🤍</span>Minimal</div>
+            </div>
+          </div>
+          <div>
+            <span class="label" style="margin-top:0">Caption Position</span>
+            <div class="pos-grid" id="pos-grid">
+              <div class="pos-btn" data-pos="top-left"  onclick="selectPos(this)">↖</div>
+              <div class="pos-btn" data-pos="top"       onclick="selectPos(this)">↑</div>
+              <div class="pos-btn" data-pos="top-right" onclick="selectPos(this)">↗</div>
+              <div class="pos-btn" data-pos="mid-left"  onclick="selectPos(this)">←</div>
+              <div class="pos-btn" data-pos="center"    onclick="selectPos(this)">⊕</div>
+              <div class="pos-btn" data-pos="mid-right" onclick="selectPos(this)">→</div>
+              <div class="pos-btn" data-pos="bot-left"  onclick="selectPos(this)">↙</div>
+              <div class="pos-btn active" data-pos="bottom"    onclick="selectPos(this)">↓</div>
+              <div class="pos-btn" data-pos="bot-right" onclick="selectPos(this)">↘</div>
+            </div>
+          </div>
+        </div>
+
+        <span class="label">Background Music (optional)</span>
+        <div class="upload-zone" id="clip-music-zone">
+          <input type="file" id="clip-music-file" accept="audio/*" onchange="fileChosen('clip-music-zone','clip-music-file',this)"/>
+          <div class="uz-icon">🎵</div>
+          <strong>Drop music or click to upload</strong>
+          <p>Mixed at low volume</p>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:16px" onclick="makeClip()" id="clip-btn">✂️ Make Clip</button>
+        <div class="progress" id="clip-progress">
+          <div class="progress-bar"><div class="progress-fill" id="clip-fill"></div></div>
+          <div class="progress-text" id="clip-status">Downloading clip...</div>
+        </div>
+        <div class="error-box" id="clip-error"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="preview-wrap">
+    <div class="card">
+      <div class="card-title">📱 Preview</div>
+      <div class="preview-box">
+        <video id="preview-video" controls style="display:none"></video>
+        <div class="preview-empty" id="preview-empty">
+          <span class="pe-icon">📱</span>
+          Your short will appear here
+        </div>
+      </div>
+      <a class="download-btn" id="download-btn" download>⬇️ Download Video</a>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedStyle    = 'story';
+let selectedVoice    = 'en-US-GuyNeural';
+let selectedCap      = 'default';
+let selectedYCap     = 'default';
+let selectedPos      = 'bottom';
+let selectedPreset   = null;
+let bgTab            = 'upload';
+let ytVideoInfo      = null;   // { title, duration, transcript, hasTranscript }
+let shownClipTimes   = [];     // timestamps of already-shown suggestions
+
+const STYLES = [
+  { id:'story',      icon:'📖', label:'Story'      },
+  { id:'reddit',     icon:'👁️', label:'Reddit'     },
+  { id:'facts',      icon:'🤯', label:'Facts'      },
+  { id:'horror',     icon:'👻', label:'Horror'     },
+  { id:'motivation', icon:'💪', label:'Motivation' },
+  { id:'gaming',     icon:'🎮', label:'Gaming'     },
+  { id:'gossip',     icon:'👀', label:'Gossip'     },
+];
+
+async function init() {
+  // Style grid
+  const sg = document.getElementById('style-grid');
+  STYLES.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'tile' + (s.id === selectedStyle ? ' active' : '');
+    d.innerHTML = `<span class="tile-icon">${s.icon}</span>${s.label}`;
+    d.onclick = () => { selectedStyle = s.id; sg.querySelectorAll('.tile').forEach(t=>t.classList.remove('active')); d.classList.add('active'); };
+    sg.appendChild(d);
+  });
+
+  // Voices
+  const vg = document.getElementById('voice-grid');
+  const vr = await fetch('/api/voices').then(r=>r.json()).catch(()=>({voices:[]}));
+  vr.voices.forEach((v,i) => {
+    const d = document.createElement('div');
+    d.className = 'tile' + (i===0?' active':'');
+    d.innerHTML = `<span class="tile-icon">${v.gender==='male'?'👨':'👩'}</span>${v.name}<br><span style="font-size:10px;opacity:.6">${v.accent}</span>`;
+    d.onclick = () => { selectedVoice=v.id; vg.querySelectorAll('.tile').forEach(t=>t.classList.remove('active')); d.classList.add('active'); };
+    vg.appendChild(d);
+  });
+
+  // Presets
+  const pg = document.getElementById('preset-grid');
+  const pr = await fetch('/api/presets').then(r=>r.json()).catch(()=>({presets:[]}));
+  pr.presets.forEach(p => {
+    const d = document.createElement('div');
+    d.className = 'tile';
+    d.innerHTML = `<span class="tile-icon">${p.emoji}</span>${p.label}`;
+    d.onclick = () => { selectedPreset=p.id; pg.querySelectorAll('.tile').forEach(t=>t.classList.remove('active')); d.classList.add('active'); };
+    pg.appendChild(d);
+  });
+
+  // Drag and drop
+  ['bg-zone','music-zone','clip-music-zone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('dragover'); });
+    el.addEventListener('dragleave', () => el.classList.remove('dragover'));
+    el.addEventListener('drop', e => {
+      e.preventDefault(); el.classList.remove('dragover');
+      const input = el.querySelector('input');
+      const dt = new DataTransfer();
+      dt.items.add(e.dataTransfer.files[0]);
+      input.files = dt.files;
+      fileChosen(id, input.id, input);
+    });
+  });
+}
+
+function switchMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach((t,i) => t.classList.toggle('active', (mode==='short'&&i===0)||(mode==='clipper'&&i===1)));
+  document.getElementById('mode-short').classList.toggle('active', mode==='short');
+  document.getElementById('mode-clipper').classList.toggle('active', mode==='clipper');
+}
+
+function setBgTab(tab) {
+  bgTab = tab;
+  document.querySelectorAll('.bg-tab').forEach((t,i) => t.classList.toggle('active', ['upload','preset','youtube'][i]===tab));
+  document.getElementById('bgtab-upload').style.display  = tab==='upload'  ? '' : 'none';
+  document.getElementById('bgtab-preset').style.display  = tab==='preset'  ? '' : 'none';
+  document.getElementById('bgtab-youtube').style.display = tab==='youtube' ? '' : 'none';
+}
+
+function fileChosen(zoneId, inputId, el) {
+  const zone = document.getElementById(zoneId);
+  if (el.files[0]) {
+    zone.classList.add('has-file');
+    zone.querySelector('p').textContent = el.files[0].name;
+  }
+}
+
+function selectCap(el) {
+  selectedCap = el.dataset.cap;
+  document.querySelectorAll('[data-cap]').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+function selectYCap(el) {
+  selectedYCap = el.dataset.ycap;
+  document.querySelectorAll('[data-ycap]').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+function selectPos(el) {
+  selectedPos = el.dataset.pos;
+  document.querySelectorAll('.pos-btn').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function animateProgress(fillId, statusId, steps) {
+  const fill = document.getElementById(fillId);
+  const status = document.getElementById(statusId);
+  let i = 0;
+  const tick = () => {
+    if (i >= steps.length) return;
+    status.textContent = steps[i].text;
+    fill.style.width   = steps[i].pct + '%';
+    const delay = steps[i].delay || 2000;
+    i++;
+    setTimeout(tick, delay);
+  };
+  tick();
+}
+
+async function generateScript() {
+  const btn   = document.getElementById('gen-btn');
+  const topic = document.getElementById('topic-input').value.trim();
+  btn.textContent = '⏳ Generating...'; btn.disabled = true;
+  try {
+    const r = await fetch('/api/generate-script', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ topic, style: selectedStyle }) });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    document.getElementById('script-input').value = d.script;
+    document.getElementById('step2').classList.add('done');
+  } catch(e) { alert('Error: ' + e.message); }
+  finally { btn.textContent = '✨ Generate Script'; btn.disabled = false; }
+}
+
+async function createShort() {
+  const script = document.getElementById('script-input').value.trim();
+  if (!script) { alert('Write or generate a script first!'); return; }
+
+  const errBox = document.getElementById('short-error');
+  errBox.classList.remove('show');
+
+  const fd = new FormData();
+  fd.append('script', script);
+  fd.append('voice',  selectedVoice);
+  fd.append('caption_style', selectedCap);
+
+  if (bgTab === 'upload') {
+    const bgInput = document.getElementById('bg-file');
+    if (!bgInput.files[0]) { alert('Upload a background video or pick a preset!'); return; }
+    fd.append('background', bgInput.files[0]);
+    fd.append('bg_source', 'upload');
+  } else if (bgTab === 'preset') {
+    if (!selectedPreset) { alert('Pick a preset background!'); return; }
+    fd.append('bg_source', 'preset');
+    fd.append('bg_preset', selectedPreset);
+  } else {
+    const ytUrl = document.getElementById('bg-yt-url').value.trim();
+    if (!ytUrl) { alert('Enter a YouTube URL!'); return; }
+    fd.append('bg_source', 'youtube');
+    fd.append('bg_yt_url', ytUrl);
+  }
+
+  const musicInput = document.getElementById('music-file');
+  if (musicInput.files[0]) fd.append('music', musicInput.files[0]);
+
+  const btn = document.getElementById('create-btn');
+  btn.disabled = true;
+  const prog = document.getElementById('short-progress');
+  prog.classList.add('show');
+
+  const steps = bgTab === 'upload'
+    ? [
+        { text:'Generating voiceover...', pct:20, delay:4000 },
+        { text:'Burning captions...', pct:55, delay:2000 },
+        { text:'Rendering video...', pct:80, delay:10000 },
+        { text:'Almost done...', pct:95, delay:5000 },
+      ]
+    : [
+        { text:'Downloading background clip...', pct:15, delay:15000 },
+        { text:'Generating voiceover...', pct:40, delay:4000 },
+        { text:'Burning captions...', pct:65, delay:2000 },
+        { text:'Rendering video...', pct:85, delay:10000 },
+        { text:'Almost done...', pct:95, delay:3000 },
+      ];
+
+  animateProgress('short-fill', 'short-status', steps);
+
+  try {
+    const r = await fetch('/api/create', { method:'POST', body: fd });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    document.getElementById('short-fill').style.width = '100%';
+    document.getElementById('short-status').textContent = 'Done!';
+    document.getElementById('step3').classList.add('done');
+    showPreview(d.video);
+  } catch(e) {
+    errBox.textContent = 'Error: ' + e.message;
+    errBox.classList.add('show');
+    document.getElementById('short-status').textContent = 'Failed';
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => prog.classList.remove('show'), 3000);
+  }
+}
+
+function renderClips(clips, append = false) {
+  const cc = document.getElementById('clip-cards');
+  if (!append) cc.innerHTML = '';
+  (clips || []).forEach(clip => {
+    const clipLen = Math.round(clip.end - clip.start);
+    const lenLabel = clipLen < 60 ? `${clipLen}s` : `${Math.floor(clipLen/60)}m ${clipLen%60}s`;
+    const estimated = clip.estimated ? '<span style="font-size:10px;color:#f59e0b;margin-left:6px">estimated</span>' : '';
+    const d = document.createElement('div');
+    d.className = 'clip-card';
+    d.innerHTML = `
+      <div class="cc-title">${clip.title}${estimated}</div>
+      <div class="cc-time">⏱ ${fmt(clip.start)} — ${fmt(clip.end)} &nbsp;<span style="color:var(--accent2)">${lenLabel}</span></div>
+      <div class="cc-hook">${clip.hook}</div>
+      <span class="cc-caption">${clip.caption}</span>
+    `;
+    d.onclick = () => {
+      document.querySelectorAll('.clip-card').forEach(c=>c.classList.remove('active'));
+      d.classList.add('active');
+      document.getElementById('clip-start').value   = clip.start;
+      document.getElementById('clip-end').value     = clip.end;
+      document.getElementById('clip-caption').value = clip.caption;
+      updateClipDuration();
+      document.getElementById('yt-custom-card').style.display = '';
+    };
+    cc.appendChild(d);
+    shownClipTimes.push(Math.round(clip.start));
+  });
+  document.getElementById('yt-suggestions-card').style.display = '';
+}
+
+async function analyzeVideo() {
+  const url = document.getElementById('yt-url').value.trim();
+  if (!url) { alert('Paste a YouTube URL first!'); return; }
+
+  const errBox = document.getElementById('yt-error');
+  errBox.classList.remove('show');
+  document.getElementById('yt-info-box').classList.remove('show');
+  document.getElementById('yt-suggestions-card').style.display = 'none';
+  document.getElementById('yt-custom-card').style.display = 'none';
+  document.getElementById('transcript-badge').style.display = 'none';
+  document.getElementById('no-transcript-badge').style.display = 'none';
+  shownClipTimes = [];
+  ytVideoInfo = null;
+
+  const btn = document.getElementById('analyze-btn');
+  btn.textContent = 'Loading transcript...'; btn.disabled = true;
+
+  try {
+    // Step 1: get info + transcript (may take a moment)
+    const ir = await fetch('/api/yt-info', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ url }) });
+    const info = await ir.json();
+    if (info.error) throw new Error(info.error);
+    ytVideoInfo = info;
+
+    document.getElementById('yt-thumb').src = info.thumbnail || '';
+    document.getElementById('yt-title').textContent = info.title || '';
+    document.getElementById('yt-meta').textContent  = `${info.uploader || ''} • ${fmt(info.duration || 0)}`;
+    document.getElementById('yt-info-box').classList.add('show');
+    document.getElementById(info.hasTranscript ? 'transcript-badge' : 'no-transcript-badge').style.display = '';
+
+    btn.textContent = 'Finding clips...';
+
+    // Step 2: get suggestions using real transcript
+    const sr = await fetch('/api/yt-suggest', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ url, title: info.title, duration: info.duration, transcript: info.transcript })
+    });
+    const sugg = await sr.json();
+    if (sugg.error) throw new Error(sugg.error);
+
+    renderClips(sugg.clips);
+
+  } catch(e) {
+    errBox.textContent = 'Error: ' + e.message;
+    errBox.classList.add('show');
+  } finally {
+    btn.textContent = 'Analyze'; btn.disabled = false;
+  }
+}
+
+async function moreSuggestions() {
+  if (!ytVideoInfo) return;
+  const url = document.getElementById('yt-url').value.trim();
+  const btn = document.getElementById('more-btn');
+  btn.textContent = '⏳'; btn.disabled = true;
+
+  try {
+    const sr = await fetch('/api/yt-suggest', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        url,
+        title: ytVideoInfo.title,
+        duration: ytVideoInfo.duration,
+        transcript: ytVideoInfo.transcript,
+        exclude: shownClipTimes,
+        seed: Math.random().toString(36).slice(2),
+      })
+    });
+    const sugg = await sr.json();
+    if (sugg.error) throw new Error(sugg.error);
+    renderClips(sugg.clips, true); // append
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    btn.textContent = '🔄 More'; btn.disabled = false;
+  }
+}
+
+function fmt(s) {
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return `${m}:${String(sec).padStart(2,'0')}`;
+}
+
+function updateClipDuration() {
+  const s = parseFloat(document.getElementById('clip-start').value) || 0;
+  const e = parseFloat(document.getElementById('clip-end').value) || 0;
+  const label = document.getElementById('clip-dur-label');
+  if (e > s) {
+    const len = Math.round(e - s);
+    label.textContent = len < 60 ? `${len}s clip` : `${Math.floor(len/60)}m ${len%60}s clip`;
+  } else {
+    label.textContent = '';
+  }
+}
+
+async function makeClip() {
+  const url     = document.getElementById('yt-url').value.trim();
+  const start   = document.getElementById('clip-start').value;
+  const end     = document.getElementById('clip-end').value;
+  const caption = document.getElementById('clip-caption').value.trim();
+
+  if (!url || !start || !end) { alert('Fill in URL and start/end times!'); return; }
+
+  const errBox = document.getElementById('clip-error');
+  errBox.classList.remove('show');
+
+  const fd = new FormData();
+  fd.append('url',   url);
+  fd.append('start', start);
+  fd.append('end',   end);
+  fd.append('caption_style', selectedYCap);
+  fd.append('cap_position', selectedPos);
+  if (caption) { fd.append('caption', caption); fd.append('add_captions', 'true'); }
+
+  const musicInput = document.getElementById('clip-music-file');
+  if (musicInput.files[0]) fd.append('music', musicInput.files[0]);
+
+  const btn = document.getElementById('clip-btn');
+  btn.disabled = true;
+  const prog = document.getElementById('clip-progress');
+  prog.classList.add('show');
+
+  animateProgress('clip-fill', 'clip-status', [
+    { text:'Downloading clip from YouTube...', pct:30, delay:10000 },
+    { text:'Cropping to 9:16...', pct:60, delay:3000 },
+    { text:'Burning captions...', pct:80, delay:2000 },
+    { text:'Finishing up...', pct:95, delay:3000 },
+  ]);
+
+  try {
+    const r = await fetch('/api/yt-clip', { method:'POST', body: fd });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    document.getElementById('clip-fill').style.width = '100%';
+    document.getElementById('clip-status').textContent = 'Done!';
+    showPreview(d.video);
+  } catch(e) {
+    errBox.textContent = 'Error: ' + e.message;
+    errBox.classList.add('show');
+    document.getElementById('clip-status').textContent = 'Failed';
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => prog.classList.remove('show'), 3000);
+  }
+}
+
+function showPreview(url) {
+  const vid   = document.getElementById('preview-video');
+  const empty = document.getElementById('preview-empty');
+  const dl    = document.getElementById('download-btn');
+  vid.src = url; vid.style.display = '';
+  empty.style.display = 'none';
+  dl.href = url; dl.className = 'download-btn show';
+  vid.load(); vid.play().catch(()=>{});
+}
+
+init();
+</script>
+</body>
+</html>
