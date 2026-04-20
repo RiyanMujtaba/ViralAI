@@ -65,6 +65,10 @@ function extractJSON(text) {
   }
   let json = text.slice(start, i + 1);
   json = json.replace(/,(\s*[}\]])/g, '$1');   // trailing commas
+  // Convert mm:ss timestamp values to seconds  e.g. "start": 1:39  →  "start": 99
+  json = json.replace(/"(start|end)":\s*"?(\d+):(\d+)"?/g,
+    (_, key, m, s) => `"${key}": ${parseInt(m) * 60 + parseInt(s)}`
+  );
   // Escape unescaped newlines/tabs inside string values
   json = json.replace(/"((?:[^"\\]|\\.)*)"/g, (_, inner) =>
     '"' + inner.replace(/\n/g, '\\n').replace(/\r/g, '').replace(/\t/g, ' ') + '"'
@@ -517,6 +521,7 @@ RULES:
 - Clips can be any length — a 5 second reaction or a 2 minute story, whatever fits
 - caption: 4-5 words, lowercase, no punctuation, gen z style (e.g. "bro said what", "this actually happened")
 - hook: explain what specifically makes THIS moment hit — reference the actual content
+- CRITICAL: start and end MUST be plain integers in seconds. NEVER use mm:ss format. e.g. 99 not 1:39
 
 Respond with JSON only, no markdown:
 {
@@ -540,6 +545,7 @@ RULES:
 - Spread suggestions across different parts of the video
 - Be honest that these are estimated — pick moments that typically go viral in this type of content
 - caption: 4-5 words lowercase no punctuation gen z style
+- CRITICAL: start and end MUST be plain integers in seconds. NEVER use mm:ss format. e.g. 99 not 1:39
 
 Respond with JSON only:
 {
@@ -554,7 +560,6 @@ Respond with JSON only:
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.8,
-      response_format: { type: 'json_object' },
     });
 
     const text = result.choices[0].message.content.trim();
