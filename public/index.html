@@ -135,6 +135,7 @@
 <div class="mode-tabs">
   <button class="mode-tab active" onclick="switchMode('short')">⚡ AI Short</button>
   <button class="mode-tab" onclick="switchMode('clipper')">✂️ YouTube Clipper</button>
+  <button class="mode-tab" onclick="switchMode('islamic')" style="background:linear-gradient(135deg,#1a1a24,#1a1a24);border-color:#8B6914;color:#c9a227">☪️ Islamic Reels</button>
 </div>
 
 <div class="main">
@@ -209,6 +210,39 @@
           <div class="uz-icon">🎵</div>
           <strong>Drop music or click to upload</strong>
           <p>MP3, WAV — mixed at low volume</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✍️ Custom Text Overlay <span style="font-size:11px;color:var(--muted);font-weight:400;text-transform:none">(optional)</span></div>
+        <input type="text" id="overlay-text-short" placeholder="e.g. Follow for more  •  Link in bio  •  Your brand name"/>
+        <div class="grid-2" style="margin-top:10px;gap:10px">
+          <div>
+            <span class="label" style="margin-top:0">Position</span>
+            <div class="pos-grid" id="ov-pos-short">
+              <div class="pos-btn" data-pos="top-left"  onclick="selOvPos(this,'short')">↖</div>
+              <div class="pos-btn" data-pos="top"       onclick="selOvPos(this,'short')">↑</div>
+              <div class="pos-btn" data-pos="top-right" onclick="selOvPos(this,'short')">↗</div>
+              <div class="pos-btn" data-pos="mid-left"  onclick="selOvPos(this,'short')">←</div>
+              <div class="pos-btn" data-pos="center"    onclick="selOvPos(this,'short')">⊕</div>
+              <div class="pos-btn" data-pos="mid-right" onclick="selOvPos(this,'short')">→</div>
+              <div class="pos-btn" data-pos="bot-left"  onclick="selOvPos(this,'short')">↙</div>
+              <div class="pos-btn active" data-pos="bottom" onclick="selOvPos(this,'short')">↓</div>
+              <div class="pos-btn" data-pos="bot-right" onclick="selOvPos(this,'short')">↘</div>
+            </div>
+          </div>
+          <div>
+            <span class="label" style="margin-top:0">Size</span>
+            <input type="range" id="ov-size-short" min="40" max="160" value="75" style="width:100%;margin-top:6px" oninput="document.getElementById('ov-size-short-val').textContent=this.value"/>
+            <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">Size: <span id="ov-size-short-val">75</span>px</div>
+            <span class="label">Color</span>
+            <div class="grid-4" id="ov-color-short" style="gap:6px">
+              <div class="tile active" data-color="0xFFFFFF" onclick="selOvColor(this,'short')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#fff;border-radius:50%;margin:0 auto 4px;border:1px solid #444"></span>White</div>
+              <div class="tile" data-color="0xFFD700" onclick="selOvColor(this,'short')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#FFD700;border-radius:50%;margin:0 auto 4px"></span>Gold</div>
+              <div class="tile" data-color="0xFF4444" onclick="selOvColor(this,'short')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#FF4444;border-radius:50%;margin:0 auto 4px"></span>Red</div>
+              <div class="tile" data-color="0x00FF88" onclick="selOvColor(this,'short')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#00FF88;border-radius:50%;margin:0 auto 4px"></span>Green</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -317,6 +351,39 @@
           <p>Mixed at low volume</p>
         </div>
 
+        <div style="margin-top:14px">
+          <span class="label" style="margin-top:0">✍️ Custom Text Overlay <span style="font-size:11px;color:var(--muted);font-weight:400;text-transform:none">(optional)</span></span>
+          <input type="text" id="overlay-text-clip" placeholder="e.g. Follow for more  •  Link in bio"/>
+          <div class="grid-2" style="margin-top:10px;gap:10px">
+            <div>
+              <span class="label" style="margin-top:0">Position</span>
+              <div class="pos-grid" id="ov-pos-clip">
+                <div class="pos-btn" data-pos="top-left"  onclick="selOvPos(this,'clip')">↖</div>
+                <div class="pos-btn" data-pos="top"       onclick="selOvPos(this,'clip')">↑</div>
+                <div class="pos-btn" data-pos="top-right" onclick="selOvPos(this,'clip')">↗</div>
+                <div class="pos-btn" data-pos="mid-left"  onclick="selOvPos(this,'clip')">←</div>
+                <div class="pos-btn" data-pos="center"    onclick="selOvPos(this,'clip')">⊕</div>
+                <div class="pos-btn" data-pos="mid-right" onclick="selOvPos(this,'clip')">→</div>
+                <div class="pos-btn" data-pos="bot-left"  onclick="selOvPos(this,'clip')">↙</div>
+                <div class="pos-btn active" data-pos="bottom" onclick="selOvPos(this,'clip')">↓</div>
+                <div class="pos-btn" data-pos="bot-right" onclick="selOvPos(this,'clip')">↘</div>
+              </div>
+            </div>
+            <div>
+              <span class="label" style="margin-top:0">Size</span>
+              <input type="range" id="ov-size-clip" min="40" max="160" value="75" style="width:100%;margin-top:6px" oninput="document.getElementById('ov-size-clip-val').textContent=this.value"/>
+              <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">Size: <span id="ov-size-clip-val">75</span>px</div>
+              <span class="label">Color</span>
+              <div class="grid-4" id="ov-color-clip" style="gap:6px">
+                <div class="tile active" data-color="0xFFFFFF" onclick="selOvColor(this,'clip')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#fff;border-radius:50%;margin:0 auto 4px;border:1px solid #444"></span>White</div>
+                <div class="tile" data-color="0xFFD700" onclick="selOvColor(this,'clip')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#FFD700;border-radius:50%;margin:0 auto 4px"></span>Gold</div>
+                <div class="tile" data-color="0xFF4444" onclick="selOvColor(this,'clip')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#FF4444;border-radius:50%;margin:0 auto 4px"></span>Red</div>
+                <div class="tile" data-color="0x00FF88" onclick="selOvColor(this,'clip')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#00FF88;border-radius:50%;margin:0 auto 4px"></span>Green</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <button class="btn btn-primary" style="margin-top:16px" onclick="makeClip()" id="clip-btn">✂️ Make Clip</button>
         <div class="progress" id="clip-progress">
           <div class="progress-bar"><div class="progress-fill" id="clip-fill"></div></div>
@@ -326,6 +393,111 @@
       </div>
 
     </div>
+
+    <!-- ISLAMIC REELS MODE -->
+    <div id="mode-islamic" class="mode-section">
+
+      <div class="card" style="border-color:#3d2b00;background:linear-gradient(135deg,#1a1200,#1a1a24)">
+        <div class="card-title" style="color:#c9a227">☪️ Islamic Verse Reel</div>
+        <p style="font-size:13px;color:#a07820;margin-bottom:14px">Generate dark aesthetic Islamic short reels — a Quran verse, soothing voice, gold subtitles. Ready for Instagram.</p>
+        <button class="btn" style="background:linear-gradient(135deg,#8B6914,#c9a227);color:#000;font-weight:800" onclick="fetchIslamicVerse()" id="verse-btn">✨ Get Random Verse</button>
+      </div>
+
+      <!-- Verse Card (hidden until fetched) -->
+      <div class="card" id="verse-card" style="display:none;border-color:#3d2b00;background:#110d00">
+        <div class="card-title" style="color:#c9a227">📖 Verse</div>
+        <div id="verse-arabic" style="font-size:22px;color:#fff;text-align:right;direction:rtl;line-height:1.8;margin-bottom:14px;font-family:serif;letter-spacing:1px"></div>
+        <div id="verse-meta" style="font-size:12px;color:#c9a227;margin-bottom:10px;font-weight:700"></div>
+        <div id="verse-english" style="font-size:14px;color:#ddd;line-height:1.7;font-style:italic"></div>
+        <button class="btn btn-secondary btn-sm" onclick="fetchIslamicVerse()" style="margin-top:14px;border-color:#3d2b00;color:#c9a227">🔄 New Verse</button>
+      </div>
+
+      <!-- Background -->
+      <div class="card" id="islamic-bg-card" style="display:none;border-color:#2a2a3a">
+        <div class="card-title" style="color:#c9a227">🌑 Dark Background</div>
+        <div class="grid-3" id="islamic-preset-grid"></div>
+        <p style="font-size:12px;color:var(--muted);margin-top:10px">Auto-downloaded dark aesthetic video clip.</p>
+      </div>
+
+      <!-- Voice -->
+      <div class="card" id="islamic-voice-card" style="display:none;border-color:#2a2a3a">
+        <div class="card-title" style="color:#c9a227">🎙️ Narration Voice <span style="font-size:11px;color:#666;font-weight:400">(Arabic is always recited in Arabic)</span></div>
+        <div class="grid-4" id="islamic-voice-grid"></div>
+      </div>
+
+      <!-- Text Overlay -->
+      <div class="card" id="islamic-overlay-card" style="display:none;border-color:#2a2a3a">
+        <div class="card-title" style="color:#c9a227">✍️ Custom Text Overlay <span style="font-size:11px;color:#666;font-weight:400;text-transform:none">(optional)</span></div>
+        <textarea id="overlay-text-islamic" rows="3" placeholder="e.g. Follow for more&#10;Your page name&#10;Arabic or English — press Enter for new line" style="width:100%;background:var(--surface);border:1px solid #333;border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box;font-family:inherit"></textarea>
+        <div class="grid-2" style="margin-top:10px;gap:10px">
+          <div>
+            <span class="label" style="margin-top:0">Position</span>
+            <div class="pos-grid" id="ov-pos-islamic">
+              <div class="pos-btn" data-pos="top-left"  onclick="selOvPos(this,'islamic')">↖</div>
+              <div class="pos-btn" data-pos="top"       onclick="selOvPos(this,'islamic')">↑</div>
+              <div class="pos-btn" data-pos="top-right" onclick="selOvPos(this,'islamic')">↗</div>
+              <div class="pos-btn" data-pos="mid-left"  onclick="selOvPos(this,'islamic')">←</div>
+              <div class="pos-btn" data-pos="center"    onclick="selOvPos(this,'islamic')">⊕</div>
+              <div class="pos-btn" data-pos="mid-right" onclick="selOvPos(this,'islamic')">→</div>
+              <div class="pos-btn" data-pos="bot-left"  onclick="selOvPos(this,'islamic')">↙</div>
+              <div class="pos-btn active" data-pos="bottom" onclick="selOvPos(this,'islamic')">↓</div>
+              <div class="pos-btn" data-pos="bot-right" onclick="selOvPos(this,'islamic')">↘</div>
+            </div>
+          </div>
+          <div>
+            <span class="label" style="margin-top:0">Size</span>
+            <input type="range" id="ov-size-islamic" min="40" max="140" value="65" style="width:100%;margin-top:6px" oninput="document.getElementById('ov-size-islamic-val').textContent=this.value"/>
+            <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">Size: <span id="ov-size-islamic-val">65</span>px</div>
+            <span class="label">Color</span>
+            <div class="grid-4" id="ov-color-islamic" style="gap:6px">
+              <div class="tile active" data-color="0xFFFFFF" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#fff;border-radius:50%;margin:0 auto 4px;border:1px solid #444"></span>White</div>
+              <div class="tile" data-color="0xFFD700" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#FFD700;border-radius:50%;margin:0 auto 4px"></span>Gold</div>
+              <div class="tile" data-color="0x00CFFF" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#00CFFF;border-radius:50%;margin:0 auto 4px"></span>Cyan</div>
+              <div class="tile" data-color="0xFF4444" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#FF4444;border-radius:50%;margin:0 auto 4px"></span>Red</div>
+              <div class="tile" data-color="0x00FF88" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#00FF88;border-radius:50%;margin:0 auto 4px"></span>Green</div>
+              <div class="tile" data-color="0xC084FC" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#C084FC;border-radius:50%;margin:0 auto 4px"></span>Purple</div>
+              <div class="tile" data-color="0xFF9F40" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#FF9F40;border-radius:50%;margin:0 auto 4px"></span>Orange</div>
+              <div class="tile" data-color="0xF9A8D4" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#F9A8D4;border-radius:50%;margin:0 auto 4px"></span>Rose</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Music -->
+      <div class="card" id="islamic-music-card" style="display:none;margin-top:12px">
+        <div class="label" style="font-size:13px;font-weight:600;margin-bottom:10px">Background Music</div>
+        <div class="grid-4" id="music-type-grid" style="gap:6px;margin-bottom:10px">
+          <div class="tile active" data-music="none"      onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">None</div>
+          <div class="tile"        data-music="rain"      onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Rain</div>
+          <div class="tile"        data-music="heavyrain" onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Heavy Rain</div>
+          <div class="tile"        data-music="river"     onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">River</div>
+          <div class="tile"        data-music="ocean"     onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Ocean</div>
+          <div class="tile"        data-music="waterfall" onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Waterfall</div>
+          <div class="tile"        data-music="wind"      onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Wind</div>
+          <div class="tile"        data-music="storm"     onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Thunderstorm</div>
+          <div class="tile"        data-music="forest"    onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Forest</div>
+          <div class="tile"        data-music="night"     onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Night Crickets</div>
+          <div class="tile"        data-music="calm"      onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Calm 432Hz</div>
+          <div class="tile"        data-music="deep"      onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Deep 174Hz</div>
+          <div class="tile"        data-music="peace"     onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Peace 528Hz</div>
+          <div class="tile"        data-music="custom"    onclick="selMusic(this)" style="padding:8px 4px;font-size:11px">Custom URL</div>
+        </div>
+        <div id="music-url-row" style="display:none">
+          <input id="music-url-input" type="url" placeholder="Direct .mp3 link" style="width:100%;background:var(--surface);border:1px solid #333;border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;box-sizing:border-box"/>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">Paste a direct .mp3 link — no YouTube</div>
+        </div>
+      </div>
+
+      <!-- Generate -->
+      <button class="btn" id="islamic-create-btn" onclick="createIslamicReel()" style="display:none;background:linear-gradient(135deg,#8B6914,#c9a227);color:#000;font-weight:800;font-size:15px">🌙 Generate Reel</button>
+      <div class="progress" id="islamic-progress">
+        <div class="progress-bar" style="background:#3d2b00"><div class="progress-fill" id="islamic-fill" style="background:linear-gradient(90deg,#8B6914,#c9a227)"></div></div>
+        <div class="progress-text" id="islamic-status">Generating...</div>
+      </div>
+      <div class="error-box" id="islamic-error"></div>
+
+    </div>
+
   </div>
 
   <!-- Preview -->
@@ -398,6 +570,9 @@ async function init() {
     pg.appendChild(d);
   });
 
+  // Islamic UI (uses same presets)
+  initIslamicUI(pr.presets);
+
   // Drag and drop
   ['bg-zone','music-zone','clip-music-zone'].forEach(id => {
     const el = document.getElementById(id);
@@ -416,9 +591,15 @@ async function init() {
 }
 
 function switchMode(mode) {
-  document.querySelectorAll('.mode-tab').forEach((t,i) => t.classList.toggle('active', (mode==='short'&&i===0)||(mode==='clipper'&&i===1)));
-  document.getElementById('mode-short').classList.toggle('active', mode==='short');
-  document.getElementById('mode-clipper').classList.toggle('active', mode==='clipper');
+  const modes = ['short','clipper','islamic'];
+  document.querySelectorAll('.mode-tab').forEach((t,i) => {
+    t.classList.toggle('active', modes[i]===mode);
+    if (modes[i]==='islamic') {
+      t.style.background = modes[i]===mode ? 'linear-gradient(135deg,#8B6914,#c9a227)' : 'linear-gradient(135deg,#1a1a24,#1a1a24)';
+      t.style.color      = modes[i]===mode ? '#000' : '#c9a227';
+    }
+  });
+  modes.forEach(m => document.getElementById(`mode-${m}`).classList.toggle('active', m===mode));
 }
 
 function setBgTab(tab) {
@@ -512,6 +693,14 @@ async function createShort() {
 
   const musicInput = document.getElementById('music-file');
   if (musicInput.files[0]) fd.append('music', musicInput.files[0]);
+
+  const ovText = document.getElementById('overlay-text-short').value.trim();
+  if (ovText) {
+    fd.append('overlay_text',  ovText);
+    fd.append('overlay_pos',   ovPos.short);
+    fd.append('overlay_size',  document.getElementById('ov-size-short').value);
+    fd.append('overlay_color', ovColor.short);
+  }
 
   const btn = document.getElementById('create-btn');
   btn.disabled = true;
@@ -749,6 +938,14 @@ async function makeClip() {
   const musicInput = document.getElementById('clip-music-file');
   if (musicInput.files[0]) fd.append('music', musicInput.files[0]);
 
+  const ovTextClip = document.getElementById('overlay-text-clip').value.trim();
+  if (ovTextClip) {
+    fd.append('overlay_text',  ovTextClip);
+    fd.append('overlay_pos',   ovPos.clip);
+    fd.append('overlay_size',  document.getElementById('ov-size-clip').value);
+    fd.append('overlay_color', ovColor.clip);
+  }
+
   const btn = document.getElementById('clip-btn');
   btn.disabled = true;
   const prog = document.getElementById('clip-progress');
@@ -786,6 +983,166 @@ function showPreview(url) {
   empty.style.display = 'none';
   dl.href = url; dl.className = 'download-btn show';
   vid.load(); vid.play().catch(()=>{});
+}
+
+// ── Text Overlay helpers ──────────────────────────────────────
+let ovPos   = { short: 'bottom', clip: 'bottom', islamic: 'bottom' };
+let ovColor = { short: '0xFFFFFF', clip: '0xFFFFFF', islamic: '0xFFFFFF' };
+let islamicMusicType = 'none';
+
+function selMusic(el) {
+  islamicMusicType = el.dataset.music;
+  document.getElementById('music-type-grid').querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('music-url-row').style.display = islamicMusicType === 'custom' ? 'block' : 'none';
+}
+
+function selOvPos(el, mode) {
+  ovPos[mode] = el.dataset.pos;
+  document.getElementById(`ov-pos-${mode}`).querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+function selOvColor(el, mode) {
+  ovColor[mode] = el.dataset.color;
+  document.getElementById(`ov-color-${mode}`).querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Islamic Reels ────────────────────────────────────────────
+let islamicVerse      = null;  // { ayahNum, arabic, translation, surah, numberInSurah }
+let islamicBgPreset   = 'stars';
+let islamicVoice      = 'en-US-AriaNeural';
+
+const ISLAMIC_VOICES = [
+  { id: 'en-US-AriaNeural',    name: 'Aria',    accent: 'Calm · US',   gender: 'female' },
+  { id: 'en-GB-SoniaNeural',   name: 'Sonia',   accent: 'Soft · UK',   gender: 'female' },
+  { id: 'en-US-EmmaNeural',    name: 'Emma',    accent: 'Warm · US',   gender: 'female' },
+  { id: 'en-US-JennyNeural',   name: 'Jenny',   accent: 'Clear · US',  gender: 'female' },
+  { id: 'en-AU-NatashaNeural', name: 'Natasha', accent: 'Sooth · AU',  gender: 'female' },
+  { id: 'en-GB-RyanNeural',    name: 'Ryan',    accent: 'Deep · UK',   gender: 'male'   },
+  { id: 'en-AU-WilliamNeural', name: 'William', accent: 'Gentle · AU', gender: 'male'   },
+  { id: 'en-US-AndrewNeural',  name: 'Andrew',  accent: 'Steady · US', gender: 'male'   },
+];
+
+const DARK_PRESETS = ['stars','rain','candles','space','nature'];
+
+function initIslamicUI(allPresets) {
+  // Build dark preset grid
+  const pg = document.getElementById('islamic-preset-grid');
+  pg.innerHTML = '';
+  allPresets.filter(p => DARK_PRESETS.includes(p.id)).forEach(p => {
+    const d = document.createElement('div');
+    d.className = 'tile' + (p.id === islamicBgPreset ? ' active' : '');
+    d.innerHTML = `<span class="tile-icon">${p.emoji}</span>${p.label}`;
+    d.onclick = () => {
+      islamicBgPreset = p.id;
+      pg.querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
+      d.classList.add('active');
+    };
+    pg.appendChild(d);
+  });
+
+  // Build voice grid
+  const vg = document.getElementById('islamic-voice-grid');
+  vg.innerHTML = '';
+  ISLAMIC_VOICES.forEach((v, i) => {
+    const d = document.createElement('div');
+    d.className = 'tile' + (i===0 ? ' active' : '');
+    d.innerHTML = `<span class="tile-icon">${v.gender==='male'?'👨':'👩'}</span>${v.name}<br><span style="font-size:10px;opacity:.6">${v.accent}</span>`;
+    d.onclick = () => {
+      islamicVoice = v.id;
+      vg.querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
+      d.classList.add('active');
+    };
+    vg.appendChild(d);
+  });
+}
+
+async function fetchIslamicVerse() {
+  const btn = document.getElementById('verse-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Fetching verse...';
+  try {
+    const r = await fetch('/api/islamic-verse');
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+
+    islamicVerse = d;
+
+    document.getElementById('verse-arabic').textContent   = d.arabic;
+    document.getElementById('verse-meta').textContent     = `Surah ${d.surah} (${d.surahArabic}) — Verse ${d.numberInSurah}`;
+    document.getElementById('verse-english').textContent  = `"${d.translation}"`;
+
+    document.getElementById('verse-card').style.display           = '';
+    document.getElementById('islamic-bg-card').style.display      = '';
+    document.getElementById('islamic-voice-card').style.display   = '';
+    document.getElementById('islamic-overlay-card').style.display = '';
+    document.getElementById('islamic-music-card').style.display   = '';
+    document.getElementById('islamic-create-btn').style.display   = '';
+  } catch(e) {
+    const eb = document.getElementById('islamic-error');
+    eb.textContent = 'Failed to fetch verse: ' + e.message;
+    eb.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Get Random Verse';
+  }
+}
+
+async function createIslamicReel() {
+  if (!islamicVerse) { alert('Fetch a verse first!'); return; }
+
+  const btn = document.getElementById('islamic-create-btn');
+  btn.disabled = true;
+
+  const prog = document.getElementById('islamic-progress');
+  const errBox = document.getElementById('islamic-error');
+  errBox.classList.remove('show');
+  prog.classList.add('show');
+
+  animateProgress('islamic-fill', 'islamic-status', [
+    { text:'Downloading dark aesthetic background...', pct:25, delay:18000 },
+    { text:'Generating soothing voice...', pct:50, delay:8000 },
+    { text:'Rendering 9:16 reel...', pct:75, delay:10000 },
+    { text:'Burning gold subtitles...', pct:90, delay:4000 },
+    { text:'Almost done...', pct:97, delay:3000 },
+  ]);
+
+  try {
+    const r = await fetch('/api/create-islamic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ayahNum:       islamicVerse.ayahNum,
+        arabic:        islamicVerse.arabic,
+        arabicSimple:  islamicVerse.arabicSimple,
+        translation:   islamicVerse.translation,
+        surah:         islamicVerse.surah,
+        numberInSurah: islamicVerse.numberInSurah,
+        bg_preset:     islamicBgPreset,
+        voice:         islamicVoice,
+        overlay_text:  document.getElementById('overlay-text-islamic').value.trim(),
+        overlay_pos:   ovPos.islamic   || 'bottom',
+        overlay_size:  document.getElementById('ov-size-islamic').value,
+        overlay_color: ovColor.islamic || '0xFFFFFF',
+        music_type:    islamicMusicType,
+        music_url:     document.getElementById('music-url-input').value.trim(),
+      })
+    });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+
+    document.getElementById('islamic-fill').style.width = '100%';
+    document.getElementById('islamic-status').textContent = 'Done! ✨';
+    showPreview(d.video);
+  } catch(e) {
+    errBox.textContent = 'Error: ' + e.message;
+    errBox.classList.add('show');
+    document.getElementById('islamic-status').textContent = 'Failed';
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => prog.classList.remove('show'), 4000);
+  }
 }
 
 init();
