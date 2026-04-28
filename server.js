@@ -311,7 +311,21 @@ function parseVTT(content) {
   return cues;
 }
 
-function buildASS(cues, style = 'default') {
+// ── Orientation helpers ───────────────────────────────────────
+function getCropScale(orientation) {
+  if (orientation === 'landscape') {
+    // Crop to 16:9 then scale to 1920×1080
+    return 'crop=if(gt(iw*9\\,ih*16)\\,ih*16/9\\,iw):if(gt(iw*9\\,ih*16)\\,ih\\,iw*9/16):(iw-if(gt(iw*9\\,ih*16)\\,ih*16/9\\,iw))/2:(ih-if(gt(iw*9\\,ih*16)\\,ih\\,iw*9/16))/2,scale=1920:1080,setsar=1';
+  }
+  // Crop to 9:16 then scale to 1080×1920
+  return 'crop=if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw):if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9):(iw-if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw))/2:(ih-if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9))/2,scale=1080:1920,setsar=1';
+}
+
+function getVideoDims(orientation) {
+  return orientation === 'landscape' ? { w: 1920, h: 1080 } : { w: 1080, h: 1920 };
+}
+
+function buildASS(cues, style = 'default', orientation = 'portrait') {
   // Group into 3-word chunks for TikTok-style word-by-word captions
   const grouped = [];
   let i = 0;
@@ -325,22 +339,24 @@ function buildASS(cues, style = 'default') {
     i += 3;
   }
 
-  // Alignment 5 = center of screen (horizontal + vertical center)
-  // MarginV here is ignored for center alignment but set anyway
+  const isLandscape = orientation === 'landscape';
+  // Scale font sizes down for landscape (shorter video height)
+  const sz = (n) => isLandscape ? Math.round(n * 0.55) : n;
+
   const fontStyles = {
-    default: { font: 'Arial',       size: 115, color: '&H00FFFFFF', outline: 6, shadow: 2, align: 5 },
-    bold:    { font: 'Arial Black', size: 120, color: '&H00FFFFFF', outline: 8, shadow: 0, align: 5 },
-    yellow:  { font: 'Arial',       size: 115, color: '&H0000FFFF', outline: 6, shadow: 2, align: 5 },
-    minimal: { font: 'Arial',       size: 90,  color: '&H00FFFFFF', outline: 3, shadow: 1, align: 5 },
+    default: { font: 'Arial',       size: sz(115), color: '&H00FFFFFF', outline: sz(6), shadow: 2, align: 5 },
+    bold:    { font: 'Arial Black', size: sz(120), color: '&H00FFFFFF', outline: sz(8), shadow: 0, align: 5 },
+    yellow:  { font: 'Arial',       size: sz(115), color: '&H0000FFFF', outline: sz(6), shadow: 2, align: 5 },
+    minimal: { font: 'Arial',       size: sz(90),  color: '&H00FFFFFF', outline: sz(3), shadow: 1, align: 5 },
   };
 
   const s = fontStyles[style] || fontStyles.default;
+  const { w, h } = getVideoDims(orientation);
 
-  // BackColour &H60000000 = semi-transparent black box behind text for readability
   let ass = `[Script Info]
 ScriptType: v4.00+
-PlayResX: 1080
-PlayResY: 1920
+PlayResX: ${w}
+PlayResY: ${h}
 ScaledBorderAndShadow: yes
 
 [V4+ Styles]
@@ -388,7 +404,8 @@ app.post('/api/create', upload.fields([
   { name: 'music',      maxCount: 1 }
 ]), async (req, res) => {
   const { script, voice, caption_style, bg_source, bg_preset, bg_yt_url,
-          overlay_text, overlay_pos, overlay_size, overlay_color } = req.body;
+          overlay_text, overlay_pos, overlay_size, overlay_color, orientation } = req.body;
+  const orient = orientation === 'landscape' ? 'landscape' : 'portrait';
 
   if (!script) return res.status(400).json({ error: 'Script is required' });
   if (!voice)  return res.status(400).json({ error: 'Voice is required' });
@@ -431,14 +448,15 @@ app.post('/api/create', upload.fields([
     // 5. Build ASS captions
     const vttContent = fs.readFileSync(vttFile, 'utf8');
     const cues = parseVTT(vttContent);
-    fs.writeFileSync(assFile, buildASS(cues, caption_style || 'default'));
+    fs.writeFileSync(assFile, buildASS(cues, caption_style || 'default', orient));
 
     // 6. Pass 1 — crop video + mix audio (no subtitles yet)
     const tmpVid = path.join(UPLOADS, `${id}_tmp.mp4`);
+    const cs = getCropScale(orient);
     if (musicFile) {
-      await run(`${FFMPEG} -y -stream_loop -1 -t ${dur} -i "${bgFile}" -i "${audioFile}" -stream_loop -1 -t ${dur} -i "${musicFile}" -filter_complex "[0:v]crop=if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw):if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9):(iw-if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw))/2:(ih-if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9))/2,scale=1080:1920,setsar=1[v];[1:a]volume=1.0[voice];[2:a]volume=0.12[music];[voice][music]amix=inputs=2:duration=first[a]" -map "[v]" -map "[a]" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
+      await run(`${FFMPEG} -y -stream_loop -1 -t ${dur} -i "${bgFile}" -i "${audioFile}" -stream_loop -1 -t ${dur} -i "${musicFile}" -filter_complex "[0:v]${cs}[v];[1:a]volume=1.0[voice];[2:a]volume=0.12[music];[voice][music]amix=inputs=2:duration=first[a]" -map "[v]" -map "[a]" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
     } else {
-      await run(`${FFMPEG} -y -stream_loop -1 -t ${dur} -i "${bgFile}" -i "${audioFile}" -filter_complex "[0:v]crop=if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw):if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9):(iw-if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw))/2:(ih-if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9))/2,scale=1080:1920,setsar=1[v];[1:a]volume=1.0[a]" -map "[v]" -map "[a]" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
+      await run(`${FFMPEG} -y -stream_loop -1 -t ${dur} -i "${bgFile}" -i "${audioFile}" -filter_complex "[0:v]${cs}[v];[1:a]volume=1.0[a]" -map "[v]" -map "[a]" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
     }
 
     // 7. Pass 2 — burn subtitles onto the rendered video
@@ -633,7 +651,8 @@ Respond with JSON only:
 
 app.post('/api/yt-clip', upload.fields([{ name: 'music', maxCount: 1 }]), async (req, res) => {
   const { url, start, end, caption, caption_style, add_captions, cap_position,
-          overlay_text, overlay_pos, overlay_size, overlay_color } = req.body;
+          overlay_text, overlay_pos, overlay_size, overlay_color, orientation } = req.body;
+  const orient = orientation === 'landscape' ? 'landscape' : 'portrait';
   if (!url)   return res.status(400).json({ error: 'URL required' });
   if (!start) return res.status(400).json({ error: 'Start time required' });
   if (!end)   return res.status(400).json({ error: 'End time required' });
@@ -677,15 +696,17 @@ app.post('/api/yt-clip', upload.fields([{ name: 'music', maxCount: 1 }]), async 
       const align   = posAlign[cap_position] ?? 2;
       const marginV = (align >= 7) ? 100 : (align >= 4) ? 0 : 120; // top/mid/bot margins
 
+      const clipSz = (n) => orient === 'landscape' ? Math.round(n * 0.55) : n;
       const fontStyles = {
-        default: { font: 'Arial',       size: 80,  color: '&H00FFFFFF', outline: 4, shadow: 2 },
-        bold:    { font: 'Arial Black', size: 85,  color: '&H00FFFFFF', outline: 5, shadow: 0 },
-        yellow:  { font: 'Arial',       size: 80,  color: '&H0000FFFF', outline: 4, shadow: 2 },
-        minimal: { font: 'Arial',       size: 65,  color: '&H00FFFFFF', outline: 2, shadow: 1 },
+        default: { font: 'Arial',       size: clipSz(80),  color: '&H00FFFFFF', outline: clipSz(4), shadow: 2 },
+        bold:    { font: 'Arial Black', size: clipSz(85),  color: '&H00FFFFFF', outline: clipSz(5), shadow: 0 },
+        yellow:  { font: 'Arial',       size: clipSz(80),  color: '&H0000FFFF', outline: clipSz(4), shadow: 2 },
+        minimal: { font: 'Arial',       size: clipSz(65),  color: '&H00FFFFFF', outline: clipSz(2), shadow: 1 },
       };
       const st = fontStyles[caption_style] || fontStyles.default;
+      const { w: clipW, h: clipH } = getVideoDims(orient);
 
-      let ass = `[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,${st.font},${st.size},${st.color},&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,2,0,1,${st.outline},${st.shadow},${align},60,60,${marginV},1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
+      let ass = `[Script Info]\nScriptType: v4.00+\nPlayResX: ${clipW}\nPlayResY: ${clipH}\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,${st.font},${st.size},${st.color},&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,2,0,1,${st.outline},${st.shadow},${align},60,60,${marginV},1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
       chunks.forEach((chunk, idx) => {
         const cs = idx * chunkDur, ce = cs + chunkDur;
         ass += `Dialogue: 0,${toASSTime(cs)},${toASSTime(ce)},Default,,0,0,0,,${chunk}\n`;
@@ -694,12 +715,13 @@ app.post('/api/yt-clip', upload.fields([{ name: 'music', maxCount: 1 }]), async 
       hasCaptions = true;
     }
 
-    // Pass 1: crop to 9:16 + mix audio
+    // Pass 1: crop + mix audio
     const tmpVid = path.join(UPLOADS, `${id}_tmp.mp4`);
+    const clipCS = getCropScale(orient);
     if (musicFile) {
-      await run(`${FFMPEG} -y -i "${rawFile}" -stream_loop -1 -t ${dur} -i "${musicFile}" -filter_complex "[0:v]crop=if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw):if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9):(iw-if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw))/2:(ih-if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9))/2,scale=1080:1920,setsar=1[v];[0:a]volume=1.0[orig];[1:a]volume=0.15[music];[orig][music]amix=inputs=2:duration=first[a]" -map "[v]" -map "[a]" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
+      await run(`${FFMPEG} -y -i "${rawFile}" -stream_loop -1 -t ${dur} -i "${musicFile}" -filter_complex "[0:v]${clipCS}[v];[0:a]volume=1.0[orig];[1:a]volume=0.15[music];[orig][music]amix=inputs=2:duration=first[a]" -map "[v]" -map "[a]" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
     } else {
-      await run(`${FFMPEG} -y -i "${rawFile}" -filter_complex "[0:v]crop=if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw):if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9):(iw-if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw))/2:(ih-if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9))/2,scale=1080:1920,setsar=1[v]" -map "[v]" -map "0:a?" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
+      await run(`${FFMPEG} -y -i "${rawFile}" -filter_complex "[0:v]${clipCS}[v]" -map "[v]" -map "0:a?" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
     }
 
     // Pass 2: burn subtitles if any
@@ -805,21 +827,24 @@ async function buildMusicTrack(musicType, musicUrl, duration, dst) {
   return dst;
 }
 
-async function downloadIslamicBg(preset, dst) {
+async function downloadIslamicBg(preset, dst, orientation = 'portrait') {
+  const isLandscape = orientation === 'landscape';
   if (!PEXELS_KEY) {
-    // Fallback: solid dark background if no Pexels key
-    await run(`${FFMPEG} -y -f lavfi -i "color=c=0x0a0a1a:s=1080x1920:r=30" -t 120 -c:v libx264 -preset fast -crf 28 "${dst}"`);
+    const fallbackSize = isLandscape ? '1920x1080' : '1080x1920';
+    await run(`${FFMPEG} -y -f lavfi -i "color=c=0x0a0a1a:s=${fallbackSize}:r=30" -t 120 -c:v libx264 -preset fast -crf 28 "${dst}"`);
     return;
   }
   const query = PEXELS_QUERIES[preset] || PEXELS_QUERIES.stars;
-  const url = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=15&orientation=portrait&size=medium`;
+  const pexelsOrient = isLandscape ? 'landscape' : 'portrait';
+  const url = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=15&orientation=${pexelsOrient}&size=medium`;
   const data = await httpsGetJSON(url, { Authorization: PEXELS_KEY });
   if (!data.videos || !data.videos.length) throw new Error('No Pexels videos found for preset: ' + preset);
 
   const video = data.videos[Math.floor(Math.random() * Math.min(data.videos.length, 10))];
-  // Prefer HD portrait files ≥720p
   const files = [...video.video_files].sort((a, b) => b.height - a.height);
-  const file  = files.find(f => f.height >= 720 && f.width < f.height) || files[0];
+  const file  = isLandscape
+    ? (files.find(f => f.width >= 1280 && f.width > f.height) || files[0])
+    : (files.find(f => f.height >= 720 && f.width < f.height) || files[0]);
   await pexelsDownload(file.link, dst);
 }
 
@@ -1019,7 +1044,8 @@ function groupCues(cues, size) {
 app.post('/api/create-islamic', async (req, res) => {
   const { arabic, arabicSimple, translation, surah, numberInSurah, bg_preset, voice,
           overlay_text, overlay_pos, overlay_size, overlay_color,
-          music_type, music_url } = req.body;
+          music_type, music_url, orientation } = req.body;
+  const orient = orientation === 'landscape' ? 'landscape' : 'portrait';
   // Use simple Arabic for TTS + subtitles (standard chars, GeezaPro compatible)
   const arabicForVideo = arabicSimple || arabic;
   if (!translation || !arabic) return res.status(400).json({ error: 'Verse data required' });
@@ -1127,13 +1153,14 @@ app.post('/api/create-islamic', async (req, res) => {
 
     // 7. Download dark bg via Pexels (no yt-dlp needed)
     const bgFile = path.join(UPLOADS, `${id}_bg.mp4`);
-    await downloadIslamicBg(preset, bgFile);
+    await downloadIslamicBg(preset, bgFile, orient);
     allTmp.push(bgFile);
 
     // 8. Render video + audio (darken bg)
+    const islamicCS = getCropScale(orient).replace('setsar=1', 'setsar=1,eq=brightness=-0.1:saturation=0.5');
     await run(
       `${FFMPEG} -y -stream_loop -1 -t ${totalDur} -i "${bgFile}" -i "${finalAudio}" ` +
-      `-filter_complex "[0:v]crop=if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw):if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9):(iw-if(gt(iw*16\\,ih*9)\\,ih*9/16\\,iw))/2:(ih-if(gt(iw*16\\,ih*9)\\,ih\\,iw*16/9))/2,scale=1080:1920,setsar=1,eq=brightness=-0.1:saturation=0.5[v]" ` +
+      `-filter_complex "[0:v]${islamicCS}[v]" ` +
       `-map "[v]" -map "1:a" -t ${totalDur} -c:v libx264 -preset fast -crf 20 -c:a aac -ar 44100 -b:a 192k "${fTmp}"`
     );
 

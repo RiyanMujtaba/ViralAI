@@ -246,6 +246,15 @@
         </div>
       </div>
 
+      <!-- Orientation -->
+      <div class="card" style="padding:12px 16px">
+        <div class="card-title">📐 Video Orientation</div>
+        <div style="display:flex;gap:8px">
+          <button id="orient-short-portrait"  class="btn btn-secondary" onclick="selOrient('short','portrait')"  style="flex:1;border-color:#555;background:#222">📱 Portrait (9:16)</button>
+          <button id="orient-short-landscape" class="btn btn-secondary" onclick="selOrient('short','landscape')" style="flex:1;border-color:#555;color:#aaa">🖥️ Landscape (16:9)</button>
+        </div>
+      </div>
+
       <button class="btn btn-primary" onclick="createShort()" id="create-btn">🚀 Create Short</button>
       <div class="progress" id="short-progress">
         <div class="progress-bar"><div class="progress-fill" id="short-fill"></div></div>
@@ -381,6 +390,15 @@
                 <div class="tile" data-color="0x00FF88" onclick="selOvColor(this,'clip')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#00FF88;border-radius:50%;margin:0 auto 4px"></span>Green</div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Orientation -->
+        <div style="margin-top:14px">
+          <span class="label" style="margin-top:0">📐 Video Orientation</span>
+          <div style="display:flex;gap:8px">
+            <button id="orient-clip-portrait"  class="btn btn-secondary" onclick="selOrient('clip','portrait')"  style="flex:1;border-color:#555;background:#222">📱 Portrait (9:16)</button>
+            <button id="orient-clip-landscape" class="btn btn-secondary" onclick="selOrient('clip','landscape')" style="flex:1;border-color:#555;color:#aaa">🖥️ Landscape (16:9)</button>
           </div>
         </div>
 
@@ -538,6 +556,15 @@
         <div id="music-url-row" style="display:none">
           <input id="music-url-input" type="url" placeholder="Direct .mp3 link" style="width:100%;background:var(--surface);border:1px solid #333;border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;box-sizing:border-box"/>
           <div style="font-size:10px;color:var(--muted);margin-top:4px">Paste a direct .mp3 link — no YouTube</div>
+        </div>
+      </div>
+
+      <!-- Orientation -->
+      <div class="card" id="islamic-orient-card" style="display:none;border-color:#2a2a3a;padding:12px 16px">
+        <div class="card-title" style="color:#c9a227">📐 Video Orientation</div>
+        <div style="display:flex;gap:8px">
+          <button id="orient-islamic-portrait"  class="btn btn-secondary" onclick="selOrient('islamic','portrait')"  style="flex:1;border-color:#555;background:#222">📱 Portrait (9:16)</button>
+          <button id="orient-islamic-landscape" class="btn btn-secondary" onclick="selOrient('islamic','landscape')" style="flex:1;border-color:#555;color:#aaa">🖥️ Landscape (16:9)</button>
         </div>
       </div>
 
@@ -727,6 +754,7 @@ async function createShort() {
   fd.append('script', script);
   fd.append('voice',  selectedVoice);
   fd.append('caption_style', selectedCap);
+  fd.append('orientation', orientation.short);
 
   if (bgTab === 'upload') {
     const bgInput = document.getElementById('bg-file');
@@ -986,6 +1014,7 @@ async function makeClip() {
   fd.append('end',   end);
   fd.append('caption_style', selectedYCap);
   fd.append('cap_position', selectedPos);
+  fd.append('orientation', orientation.clip);
   if (caption) { fd.append('caption', caption); fd.append('add_captions', 'true'); }
 
   const musicInput = document.getElementById('clip-music-file');
@@ -1039,9 +1068,24 @@ function showPreview(url) {
 }
 
 // ── Text Overlay helpers ──────────────────────────────────────
-let ovPos   = { short: 'bottom', clip: 'bottom', islamic: 'bottom' };
-let ovColor = { short: '0xFFFFFF', clip: '0xFFFFFF', islamic: '0xFFFFFF' };
+let ovPos       = { short: 'bottom', clip: 'bottom', islamic: 'bottom' };
+let ovColor     = { short: '0xFFFFFF', clip: '0xFFFFFF', islamic: '0xFFFFFF' };
+let orientation = { short: 'portrait', clip: 'portrait', islamic: 'portrait' };
 let islamicMusicType = 'none';
+
+function selOrient(mode, value) {
+  orientation[mode] = value;
+  const portrait  = document.getElementById(`orient-${mode}-portrait`);
+  const landscape = document.getElementById(`orient-${mode}-landscape`);
+  if (!portrait || !landscape) return;
+  if (value === 'landscape') {
+    landscape.style.background = '#444'; landscape.style.color = '#fff'; landscape.style.borderColor = '#888';
+    portrait.style.background  = '';     portrait.style.color  = '#aaa'; portrait.style.borderColor  = '#555';
+  } else {
+    portrait.style.background  = '#222'; portrait.style.color  = '#fff'; portrait.style.borderColor  = '#888';
+    landscape.style.background = '';     landscape.style.color = '#aaa'; landscape.style.borderColor = '#555';
+  }
+}
 
 function selMusic(el) {
   islamicMusicType = el.dataset.music;
@@ -1202,6 +1246,7 @@ async function fetchIslamicVerse(opts = {}) {
     document.getElementById('islamic-voice-card').style.display   = '';
     document.getElementById('islamic-overlay-card').style.display = '';
     document.getElementById('islamic-music-card').style.display   = '';
+    document.getElementById('islamic-orient-card').style.display  = '';
     document.getElementById('islamic-create-btn').style.display   = '';
   } catch(e) {
     const eb = document.getElementById('islamic-error');
@@ -1253,6 +1298,7 @@ async function createIslamicReel() {
         overlay_color: ovColor.islamic || '0xFFFFFF',
         music_type:    islamicMusicType,
         music_url:     document.getElementById('music-url-input').value.trim(),
+        orientation:   orientation.islamic,
       })
     });
     const d = await r.json();
