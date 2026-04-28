@@ -835,29 +835,124 @@ const ISLAMIC_VERSE_POOL = [
   65003, // use random below
 ];
 
+// Surah name → [surahNumber, totalVerses]
+const SURAH_MAP = {
+  'Al-Fatihah':1,'Al-Baqarah':2,'Al-Imran':3,'An-Nisa':4,'Al-Maidah':5,'Al-Anam':6,
+  'Al-Araf':7,'Al-Anfal':8,'At-Tawbah':9,'Yunus':10,'Hud':11,'Yusuf':12,'Ar-Rad':13,
+  'Ibrahim':14,'Al-Hijr':15,'An-Nahl':16,'Al-Isra':17,'Al-Kahf':18,'Maryam':19,'Ta-Ha':20,
+  'Al-Anbiya':21,'Al-Hajj':22,'Al-Muminun':23,'An-Nur':24,'Al-Furqan':25,'Ash-Shuara':26,
+  'An-Naml':27,'Al-Qasas':28,'Al-Ankabut':29,'Ar-Rum':30,'Luqman':31,'As-Sajdah':32,
+  'Al-Ahzab':33,'Saba':34,'Fatir':35,'Ya-Sin':36,'As-Saffat':37,'Sad':38,'Az-Zumar':39,
+  'Ghafir':40,'Fussilat':41,'Ash-Shuraa':42,'Az-Zukhruf':43,'Ad-Dukhan':44,'Al-Jathiyah':45,
+  'Al-Ahqaf':46,'Muhammad':47,'Al-Fath':48,'Al-Hujurat':49,'Qaf':50,'Adh-Dhariyat':51,
+  'At-Tur':52,'An-Najm':53,'Al-Qamar':54,'Ar-Rahman':55,'Al-Waqiah':56,'Al-Hadid':57,
+  'Al-Mujadila':58,'Al-Hashr':59,'Al-Mumtahanah':60,'As-Saf':61,'Al-Jumuah':62,
+  'Al-Munafiqun':63,'At-Taghabun':64,'At-Talaq':65,'At-Tahrim':66,'Al-Mulk':67,'Al-Qalam':68,
+  'Al-Haqqah':69,'Al-Maarij':70,'Nuh':71,'Al-Jinn':72,'Al-Muzzammil':73,'Al-Muddathir':74,
+  'Al-Qiyamah':75,'Al-Insan':76,'Al-Mursalat':77,'An-Naba':78,'An-Naziat':79,'Abasa':80,
+  'At-Takwir':81,'Al-Infitar':82,'Al-Mutaffifin':83,'Al-Inshiqaq':84,'Al-Buruj':85,
+  'At-Tariq':86,'Al-Ala':87,'Al-Ghashiyah':88,'Al-Fajr':89,'Al-Balad':90,'Ash-Shams':91,
+  'Al-Layl':92,'Ad-Duha':93,'Ash-Sharh':94,'At-Tin':95,'Al-Alaq':96,'Al-Qadr':97,
+  'Al-Bayyinah':98,'Az-Zalzalah':99,'Al-Adiyat':100,'Al-Qariah':101,'At-Takathur':102,
+  'Al-Asr':103,'Al-Humazah':104,'Al-Fil':105,'Quraysh':106,'Al-Maun':107,'Al-Kawthar':108,
+  'Al-Kafirun':109,'An-Nasr':110,'Al-Masad':111,'Al-Ikhlas':112,'Al-Falaq':113,'An-Nas':114,
+};
+const SURAH_VERSES = [7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,33,73,28,28,20,55,40,29,45,26,20,17,19,26,30,20,15,21,11,8,8,19,5,8,8,4,7,3,6,3,5,4,7,6,3,3,3];
+
+async function fetchAyah(ayahNum) {
+  const data = await httpsGetJSON(
+    `https://api.alquran.cloud/v1/ayah/${ayahNum}/editions/quran-uthmani,quran-simple,en.sahih`
+  );
+  if (data.code !== 200) throw new Error('Quran API error');
+  const [uthmani, simple, english] = data.data;
+  return {
+    ayahNum,
+    arabic:        uthmani.text,
+    arabicSimple:  simple.text,
+    translation:   english.text,
+    surah:         uthmani.surah.englishName,
+    surahArabic:   uthmani.surah.name,
+    surahNumber:   uthmani.surah.number,
+    numberInSurah: uthmani.numberInSurah,
+    revelationType: uthmani.surah.revelationType,
+  };
+}
+
+// Curated ayah references per topic (surah:verse format)
+const TOPIC_AYAHS = {
+  patience:      ['2:153','2:155','2:177','3:200','8:46','16:96','39:10','47:31','103:3'],
+  gratitude:     ['2:152','7:10','14:7','16:114','27:40','31:12','34:13','2:185'],
+  mercy:         ['2:163','6:12','6:54','7:156','12:64','21:107','39:53','57:28'],
+  forgiveness:   ['3:135','4:110','25:70','39:53','42:25','4:48','2:286','66:8'],
+  paradise:      ['3:133','3:198','10:26','13:23','47:15','76:12','76:13','55:46'],
+  prayer:        ['2:45','2:238','4:103','11:114','20:132','29:45','62:9'],
+  tawakkul:      ['3:159','3:173','9:51','14:12','65:3','58:10','39:38','33:3'],
+  'trust in allah': ['3:159','3:173','9:51','14:12','65:3','58:10','39:38','33:3'],
+  knowledge:     ['2:269','20:114','35:28','39:9','58:11','96:1','2:31','49:13'],
+  afterlife:     ['2:281','3:185','4:87','21:35','39:68','75:26','56:60','23:115'],
+  believers:     ['2:2','8:2','8:4','23:1','24:51','9:71','49:10','3:110'],
+  love:          ['2:165','3:31','5:54','85:14','2:177','3:134','4:36'],
+  guidance:      ['2:2','2:186','6:88','16:64','17:9','24:35','39:22','57:28'],
+  repentance:    ['2:222','4:110','25:70','39:53','66:8','9:104','11:3','42:25'],
+  family:        ['2:233','4:1','17:23','17:24','31:13','31:14','46:15','4:36'],
+  'wealth provision': ['2:3','11:6','17:30','51:58','65:3','2:261','34:39','6:165'],
+  justice:       ['4:58','4:135','5:8','16:90','57:25','7:29','6:152'],
+};
+
 app.get('/api/islamic-verse', async (req, res) => {
   try {
-    // Pick a random ayah (total 6236 ayahs in the Quran)
+    const { mode, q, surah } = req.query;
+
+    // ── Topic mode — use curated ayah list (always reliable) ──
+    if (mode === 'topic' && q) {
+      const key = q.toLowerCase().trim();
+      // find exact key or partial match
+      const matched = TOPIC_AYAHS[key] ||
+        TOPIC_AYAHS[Object.keys(TOPIC_AYAHS).find(k => k.includes(key) || key.includes(k))] || null;
+      if (matched) {
+        const pick = matched[Math.floor(Math.random() * matched.length)];
+        return res.json(await fetchAyah(pick));
+      }
+      // fallback to search API for unknown topics
+      const search = await httpsGetJSON(
+        `https://api.alquran.cloud/v1/search/${encodeURIComponent(q)}/all/en.sahih`
+      );
+      const matches = search.data?.matches;
+      if (!matches || !matches.length) return res.status(404).json({ error: `No verses found for "${q}"` });
+      const pick = matches[Math.floor(Math.random() * Math.min(matches.length, 20))];
+      return res.json(await fetchAyah(pick.number));
+    }
+
+    // ── Search mode — try each word until we get results ──────
+    if (mode === 'search' && q) {
+      const words = q.trim().split(/\s+/).filter(w => w.length > 2);
+      const attempts = [q, ...words]; // try full phrase first, then each word
+      for (const attempt of attempts) {
+        const search = await httpsGetJSON(
+          `https://api.alquran.cloud/v1/search/${encodeURIComponent(attempt)}/all/en.sahih`
+        );
+        const matches = search.data?.matches;
+        if (matches && matches.length) {
+          const pick = matches[Math.floor(Math.random() * Math.min(matches.length, 20))];
+          return res.json(await fetchAyah(pick.number));
+        }
+      }
+      return res.status(404).json({ error: `No verses found for "${q}" — try a simpler word` });
+    }
+
+    // ── By Surah ───────────────────────────────────────────────
+    if (mode === 'surah' && surah) {
+      const sNum = parseInt(surah);
+      if (sNum < 1 || sNum > 114) return res.status(400).json({ error: 'Invalid surah' });
+      const totalVerses = SURAH_VERSES[sNum - 1];
+      const randVerse   = Math.floor(Math.random() * totalVerses) + 1;
+      return res.json(await fetchAyah(`${sNum}:${randVerse}`));
+    }
+
+    // ── Random (default) ──────────────────────────────────────
     const ayahNum = Math.floor(Math.random() * 6236) + 1;
-    const data = await httpsGetJSON(
-      `https://api.alquran.cloud/v1/ayah/${ayahNum}/editions/quran-uthmani,quran-simple,en.sahih`
-    );
-    if (data.code !== 200) throw new Error('Quran API error: ' + data.status);
+    res.json(await fetchAyah(ayahNum));
 
-    const uthmani = data.data[0];
-    const simple  = data.data[1];
-    const english = data.data[2];
-
-    res.json({
-      ayahNum,
-      arabic:          uthmani.text,   // Uthmani for verse card display
-      arabicSimple:    simple.text,    // Simple for TTS + subtitles (GeezaPro compatible)
-      translation:     english.text,
-      surah:           uthmani.surah.englishName,
-      surahArabic:     uthmani.surah.name,
-      numberInSurah:   uthmani.numberInSurah,
-      revelationType:  uthmani.surah.revelationType,
-    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -399,8 +399,61 @@
 
       <div class="card" style="border-color:#3d2b00;background:linear-gradient(135deg,#1a1200,#1a1a24)">
         <div class="card-title" style="color:#c9a227">☪️ Islamic Verse Reel</div>
-        <p style="font-size:13px;color:#a07820;margin-bottom:14px">Generate dark aesthetic Islamic short reels — a Quran verse, soothing voice, gold subtitles. Ready for Instagram.</p>
-        <button class="btn" style="background:linear-gradient(135deg,#8B6914,#c9a227);color:#000;font-weight:800" onclick="fetchIslamicVerse()" id="verse-btn">✨ Get Random Verse</button>
+        <p style="font-size:13px;color:#a07820;margin-bottom:12px">Generate dark aesthetic Islamic short reels — a Quran verse, soothing voice, gold subtitles. Ready for Instagram.</p>
+
+        <!-- Mode Tabs -->
+        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+          <button id="vtab-random" class="btn btn-secondary btn-sm active-gold" onclick="setVerseMode('random')" style="flex:1;min-width:80px;border-color:#8B6914;color:#c9a227">🎲 Random</button>
+          <button id="vtab-topic"  class="btn btn-secondary btn-sm" onclick="setVerseMode('topic')"  style="flex:1;min-width:80px;border-color:#555;color:#aaa">🏷️ Topic</button>
+          <button id="vtab-search" class="btn btn-secondary btn-sm" onclick="setVerseMode('search')" style="flex:1;min-width:80px;border-color:#555;color:#aaa">🔍 Search</button>
+          <button id="vtab-surah"  class="btn btn-secondary btn-sm" onclick="setVerseMode('surah')"  style="flex:1;min-width:80px;border-color:#555;color:#aaa">📖 Surah</button>
+        </div>
+
+        <!-- Random Mode -->
+        <div id="vmode-random">
+          <button class="btn" style="width:100%;background:linear-gradient(135deg,#8B6914,#c9a227);color:#000;font-weight:800" onclick="fetchIslamicVerse()" id="verse-btn">✨ Get Random Verse</button>
+        </div>
+
+        <!-- Topic Mode -->
+        <div id="vmode-topic" style="display:none">
+          <div class="grid-4" style="gap:6px;margin-bottom:10px">
+            <div class="tile" onclick="pickTopic('patience')"       style="padding:8px 4px;font-size:11px">🤲 Patience</div>
+            <div class="tile" onclick="pickTopic('gratitude')"      style="padding:8px 4px;font-size:11px">🙏 Gratitude</div>
+            <div class="tile" onclick="pickTopic('mercy')"          style="padding:8px 4px;font-size:11px">💚 Mercy</div>
+            <div class="tile" onclick="pickTopic('forgiveness')"    style="padding:8px 4px;font-size:11px">✨ Forgiveness</div>
+            <div class="tile" onclick="pickTopic('paradise')"       style="padding:8px 4px;font-size:11px">🌿 Paradise</div>
+            <div class="tile" onclick="pickTopic('prayer')"         style="padding:8px 4px;font-size:11px">🕌 Prayer</div>
+            <div class="tile" onclick="pickTopic('trust in Allah')" style="padding:8px 4px;font-size:11px">🌙 Tawakkul</div>
+            <div class="tile" onclick="pickTopic('knowledge')"      style="padding:8px 4px;font-size:11px">📚 Knowledge</div>
+            <div class="tile" onclick="pickTopic('death afterlife')" style="padding:8px 4px;font-size:11px">⏳ Afterlife</div>
+            <div class="tile" onclick="pickTopic('believers righteous')" style="padding:8px 4px;font-size:11px">👥 Believers</div>
+            <div class="tile" onclick="pickTopic('love compassion')" style="padding:8px 4px;font-size:11px">❤️ Love</div>
+            <div class="tile" onclick="pickTopic('guidance light')" style="padding:8px 4px;font-size:11px">🔦 Guidance</div>
+            <div class="tile" onclick="pickTopic('repentance')"     style="padding:8px 4px;font-size:11px">🌱 Repentance</div>
+            <div class="tile" onclick="pickTopic('family')"         style="padding:8px 4px;font-size:11px">🏠 Family</div>
+            <div class="tile" onclick="pickTopic('wealth provision')" style="padding:8px 4px;font-size:11px">💰 Rizq</div>
+            <div class="tile" onclick="pickTopic('justice')"        style="padding:8px 4px;font-size:11px">⚖️ Justice</div>
+          </div>
+        </div>
+
+        <!-- Search Mode -->
+        <div id="vmode-search" style="display:none">
+          <div style="display:flex;gap:8px">
+            <input id="verse-search-input" type="text" placeholder="e.g. hardship, light, grateful..." style="flex:1;background:var(--surface);border:1px solid #333;border-radius:8px;padding:8px 12px;color:#fff;font-size:13px"/>
+            <button class="btn" onclick="searchVerse()" style="background:linear-gradient(135deg,#8B6914,#c9a227);color:#000;font-weight:800;white-space:nowrap">Search</button>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:5px">Searches English translations of the Quran</div>
+        </div>
+
+        <!-- Surah Mode -->
+        <div id="vmode-surah" style="display:none">
+          <div style="display:flex;gap:8px">
+            <select id="surah-select" style="flex:1;background:var(--surface);border:1px solid #333;border-radius:8px;padding:8px 12px;color:#fff;font-size:13px"></select>
+            <button class="btn" onclick="fetchSurahVerse()" style="background:linear-gradient(135deg,#8B6914,#c9a227);color:#000;font-weight:800;white-space:nowrap">Get Verse</button>
+          </div>
+        </div>
+
+        <div id="islamic-error" class="error-msg" style="margin-top:8px"></div>
       </div>
 
       <!-- Verse Card (hidden until fetched) -->
@@ -1056,14 +1109,85 @@ function initIslamicUI(allPresets) {
     };
     vg.appendChild(d);
   });
+
+  // Pre-populate surah dropdown
+  initSurahSelect();
 }
 
-async function fetchIslamicVerse() {
+// ── Verse mode state ──────────────────────────────────────────
+let verseMode = 'random';
+
+const SURAH_NAMES = [
+  'Al-Fatihah','Al-Baqarah','Ali \'Imran','An-Nisa\'','Al-Ma\'idah','Al-An\'am','Al-A\'raf','Al-Anfal',
+  'At-Tawbah','Yunus','Hud','Yusuf','Ar-Ra\'d','Ibrahim','Al-Hijr','An-Nahl','Al-Isra\'','Al-Kahf',
+  'Maryam','Ta-Ha','Al-Anbiya\'','Al-Hajj','Al-Mu\'minun','An-Nur','Al-Furqan','Ash-Shu\'ara\'','An-Naml',
+  'Al-Qasas','Al-\'Ankabut','Ar-Rum','Luqman','As-Sajdah','Al-Ahzab','Saba\'','Fatir','Ya-Sin',
+  'As-Saffat','Sad','Az-Zumar','Ghafir','Fussilat','Ash-Shura','Az-Zukhruf','Ad-Dukhan','Al-Jathiyah',
+  'Al-Ahqaf','Muhammad','Al-Fath','Al-Hujurat','Qaf','Adh-Dhariyat','At-Tur','An-Najm','Al-Qamar',
+  'Ar-Rahman','Al-Waqi\'ah','Al-Hadid','Al-Mujadila','Al-Hashr','Al-Mumtahanah','As-Saf','Al-Jumu\'ah',
+  'Al-Munafiqun','At-Taghabun','At-Talaq','At-Tahrim','Al-Mulk','Al-Qalam','Al-Haqqah','Al-Ma\'arij',
+  'Nuh','Al-Jinn','Al-Muzzammil','Al-Muddaththir','Al-Qiyamah','Al-Insan','Al-Mursalat','An-Naba\'',
+  'An-Nazi\'at','\'Abasa','At-Takwir','Al-Infitar','Al-Mutaffifin','Al-Inshiqaq','Al-Buruj','At-Tariq',
+  'Al-A\'la','Al-Ghashiyah','Al-Fajr','Al-Balad','Ash-Shams','Al-Layl','Ad-Duha','Ash-Sharh',
+  'At-Tin','Al-\'Alaq','Al-Qadr','Al-Bayyinah','Az-Zalzalah','Al-\'Adiyat','Al-Qari\'ah','At-Takathur',
+  'Al-\'Asr','Al-Humazah','Al-Fil','Quraysh','Al-Ma\'un','Al-Kawthar','Al-Kafirun','An-Nasr','Al-Masad',
+  'Al-Ikhlas','Al-Falaq','An-Nas'
+];
+
+function initSurahSelect() {
+  const sel = document.getElementById('surah-select');
+  if (!sel || sel.options.length > 1) return;
+  SURAH_NAMES.forEach((name, i) => {
+    const opt = document.createElement('option');
+    opt.value = i + 1;
+    opt.textContent = `${i + 1}. ${name}`;
+    sel.appendChild(opt);
+  });
+}
+
+function setVerseMode(mode) {
+  verseMode = mode;
+  ['random','topic','search','surah'].forEach(m => {
+    const tab = document.getElementById('vtab-' + m);
+    const panel = document.getElementById('vmode-' + m);
+    const isActive = m === mode;
+    if (tab) {
+      tab.style.borderColor = isActive ? '#8B6914' : '#555';
+      tab.style.color       = isActive ? '#c9a227' : '#aaa';
+      tab.classList.toggle('active-gold', isActive);
+    }
+    if (panel) panel.style.display = isActive ? '' : 'none';
+  });
+  if (mode === 'surah') initSurahSelect();
+}
+
+function pickTopic(keyword) {
+  fetchIslamicVerse({ mode: 'topic', q: keyword });
+}
+
+function searchVerse() {
+  const q = document.getElementById('verse-search-input').value.trim();
+  if (!q) return;
+  fetchIslamicVerse({ mode: 'search', q });
+}
+
+function fetchSurahVerse() {
+  const surah = document.getElementById('surah-select').value;
+  fetchIslamicVerse({ mode: 'surah', surah });
+}
+
+async function fetchIslamicVerse(opts = {}) {
   const btn = document.getElementById('verse-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Fetching verse...';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Fetching verse...'; }
+
+  const params = new URLSearchParams();
+  if (opts.mode)  params.set('mode',  opts.mode);
+  if (opts.q)     params.set('q',     opts.q);
+  if (opts.surah) params.set('surah', opts.surah);
+  const url = '/api/islamic-verse' + (params.toString() ? '?' + params.toString() : '');
+
   try {
-    const r = await fetch('/api/islamic-verse');
+    const r = await fetch(url);
     const d = await r.json();
     if (d.error) throw new Error(d.error);
 
@@ -1084,8 +1208,10 @@ async function fetchIslamicVerse() {
     eb.textContent = 'Failed to fetch verse: ' + e.message;
     eb.classList.add('show');
   } finally {
-    btn.disabled = false;
-    btn.textContent = '✨ Get Random Verse';
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '✨ Get Random Verse';
+    }
   }
 }
 
