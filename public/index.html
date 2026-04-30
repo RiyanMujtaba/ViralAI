@@ -498,22 +498,37 @@
 
       <!-- Text Overlay -->
       <div class="card" id="islamic-overlay-card" style="display:none;border-color:#2a2a3a">
-        <div class="card-title" style="color:#c9a227">✍️ Caption / Branding <span style="font-size:11px;color:#666;font-weight:400;text-transform:none">(optional — shown at top of video)</span></div>
-        <div style="font-size:11px;color:#666;margin-bottom:8px">Use this for your account name, a call-to-action, or a hashtag. The verse is already on the video — don't paste it here.</div>
-        <textarea id="overlay-text-islamic" rows="2" placeholder="e.g. @yourpage • Follow for more&#10;#Quran #Islam" style="width:100%;background:var(--surface);border:1px solid #333;border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box;font-family:inherit"></textarea>
-        <div style="display:flex;gap:10px;margin-top:10px;align-items:flex-end">
-          <div style="flex:1">
-            <span class="label" style="margin-top:0">Size</span>
-            <input type="range" id="ov-size-islamic" min="30" max="90" value="48" style="width:100%;margin-top:6px" oninput="document.getElementById('ov-size-islamic-val').textContent=this.value"/>
-            <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">Size: <span id="ov-size-islamic-val">48</span>px</div>
+        <div class="card-title" style="color:#c9a227">✍️ Custom Text Overlay <span style="font-size:11px;color:#666;font-weight:400;text-transform:none">(optional)</span></div>
+        <textarea id="overlay-text-islamic" rows="3" placeholder="e.g. Follow for more&#10;@yourpage&#10;Arabic or English — Enter for new line" style="width:100%;background:var(--surface);border:1px solid #333;border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box;font-family:inherit"></textarea>
+        <div class="grid-2" style="margin-top:10px;gap:10px">
+          <div>
+            <span class="label" style="margin-top:0">Position</span>
+            <div class="pos-grid" id="ov-pos-islamic">
+              <div class="pos-btn" data-pos="top-left"  onclick="selOvPos(this,'islamic')">↖</div>
+              <div class="pos-btn" data-pos="top"       onclick="selOvPos(this,'islamic')">↑</div>
+              <div class="pos-btn" data-pos="top-right" onclick="selOvPos(this,'islamic')">↗</div>
+              <div class="pos-btn" data-pos="mid-left"  onclick="selOvPos(this,'islamic')">←</div>
+              <div class="pos-btn" data-pos="center"    onclick="selOvPos(this,'islamic')">⊕</div>
+              <div class="pos-btn" data-pos="mid-right" onclick="selOvPos(this,'islamic')">→</div>
+              <div class="pos-btn" data-pos="bot-left"  onclick="selOvPos(this,'islamic')">↙</div>
+              <div class="pos-btn active" data-pos="bottom" onclick="selOvPos(this,'islamic')">↓</div>
+              <div class="pos-btn" data-pos="bot-right" onclick="selOvPos(this,'islamic')">↘</div>
+            </div>
           </div>
-          <div style="flex:1">
-            <span class="label" style="margin-top:0">Color</span>
-            <div class="grid-4" id="ov-color-islamic" style="gap:5px;margin-top:6px">
-              <div class="tile active" data-color="0xFFFFFF" onclick="selOvColor(this,'islamic')" style="padding:7px 3px;font-size:10px"><span style="display:block;width:14px;height:14px;background:#fff;border-radius:50%;margin:0 auto 3px;border:1px solid #444"></span>White</div>
-              <div class="tile" data-color="0xFFD700" onclick="selOvColor(this,'islamic')" style="padding:7px 3px;font-size:10px"><span style="display:block;width:14px;height:14px;background:#FFD700;border-radius:50%;margin:0 auto 3px"></span>Gold</div>
-              <div class="tile" data-color="0x00CFFF" onclick="selOvColor(this,'islamic')" style="padding:7px 3px;font-size:10px"><span style="display:block;width:14px;height:14px;background:#00CFFF;border-radius:50%;margin:0 auto 3px"></span>Cyan</div>
-              <div class="tile" data-color="0xC084FC" onclick="selOvColor(this,'islamic')" style="padding:7px 3px;font-size:10px"><span style="display:block;width:14px;height:14px;background:#C084FC;border-radius:50%;margin:0 auto 3px"></span>Purple</div>
+          <div>
+            <span class="label" style="margin-top:0">Size</span>
+            <input type="range" id="ov-size-islamic" min="40" max="140" value="65" style="width:100%;margin-top:6px" oninput="document.getElementById('ov-size-islamic-val').textContent=this.value"/>
+            <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">Size: <span id="ov-size-islamic-val">65</span>px</div>
+            <span class="label">Color</span>
+            <div class="grid-4" id="ov-color-islamic" style="gap:6px">
+              <div class="tile active" data-color="0xFFFFFF" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#fff;border-radius:50%;margin:0 auto 4px;border:1px solid #444"></span>White</div>
+              <div class="tile" data-color="0xFFD700" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#FFD700;border-radius:50%;margin:0 auto 4px"></span>Gold</div>
+              <div class="tile" data-color="0x00CFFF" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#00CFFF;border-radius:50%;margin:0 auto 4px"></span>Cyan</div>
+              <div class="tile" data-color="0xFF4444" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#FF4444;border-radius:50%;margin:0 auto 4px"></span>Red</div>
+              <div class="tile" data-color="0x00FF88" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#00FF88;border-radius:50%;margin:0 auto 4px"></span>Green</div>
+              <div class="tile" data-color="0xC084FC" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#C084FC;border-radius:50%;margin:0 auto 4px"></span>Purple</div>
+              <div class="tile" data-color="0xFF9F40" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#FF9F40;border-radius:50%;margin:0 auto 4px"></span>Orange</div>
+              <div class="tile" data-color="0xF9A8D4" onclick="selOvColor(this,'islamic')" style="padding:8px 4px;font-size:11px"><span style="display:block;width:16px;height:16px;background:#F9A8D4;border-radius:50%;margin:0 auto 4px"></span>Rose</div>
             </div>
           </div>
         </div>
