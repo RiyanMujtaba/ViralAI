@@ -999,7 +999,9 @@ function safeDT(text) {
     .replace(/;/g,  '\\;');
 }
 
-function buildIslamicDrawtext(introCues, arabicCues, engCues, surah, numberInSurah) {
+// hasCustomOverlay: when user adds their own caption, skip English + surah label
+// (they're providing their own attribution — showing both causes overlap)
+function buildIslamicDrawtext(introCues, arabicCues, engCues, surah, numberInSurah, hasCustomOverlay = false) {
   const parts = [];
 
   const dt = (font, text, x, y, size, color, borderW, s, e) =>
@@ -1009,24 +1011,24 @@ function buildIslamicDrawtext(introCues, arabicCues, engCues, surah, numberInSur
 
   const cx = '(w-text_w)/2';
 
-  // "VERSE OF THE DAY" — centered vertically, elegant gold
+  // "VERSE OF THE DAY" intro
   for (const c of introCues)
     parts.push(dt(FONT_EN, c.text, cx, 'h*0.44', 72, '0xFFD700', 5, c.start, c.end));
 
-  // Arabic verse — large white, upper area (centered)
+  // Arabic verse — always shown
   for (const c of arabicCues)
     parts.push(dt(FONT_AR, c.text, cx, 'h*0.25', 105, '0xFFFFFF', 8, c.start, c.end));
 
-  // English translation — white, center of screen
-  for (const c of engCues)
-    parts.push(dt(FONT_EN, c.text, cx, 'h*0.54', 60, '0xFFFFFF', 5, c.start, c.end));
+  // English translation + surah label — only when user hasn't added their own caption
+  if (!hasCustomOverlay) {
+    for (const c of engCues)
+      parts.push(dt(FONT_EN, c.text, cx, 'h*0.54', 60, '0xFFFFFF', 5, c.start, c.end));
 
-  // Surah reference — small gold label, lower third, shown during English
-  if (surah && engCues.length > 0) {
-    const s = engCues[0].start;
-    const e = engCues[engCues.length - 1].end;
-    const label = `Surah ${surah}  |  Verse ${numberInSurah}`;
-    parts.push(dt(FONT_EN, label, cx, 'h*0.82', 38, '0xFFD700', 3, s, e));
+    if (surah && engCues.length > 0) {
+      const s = engCues[0].start;
+      const e = engCues[engCues.length - 1].end;
+      parts.push(dt(FONT_EN, `Surah ${surah}  |  Verse ${numberInSurah}`, cx, 'h*0.82', 38, '0xFFD700', 3, s, e));
+    }
   }
 
   return parts.join(',');
@@ -1149,7 +1151,8 @@ app.post('/api/create-islamic', async (req, res) => {
 
     const engCues = shiftCues(fEngVtt, engOffset, 5);
 
-    const dtFilter = buildIslamicDrawtext(introCues, arabicCues, engCues, surah, numberInSurah);
+    const hasCustomOverlay = !!(overlay_text && overlay_text.trim());
+    const dtFilter = buildIslamicDrawtext(introCues, arabicCues, engCues, surah, numberInSurah, hasCustomOverlay);
 
     // 7. Download dark bg via Pexels (no yt-dlp needed)
     const bgFile = path.join(UPLOADS, `${id}_bg.mp4`);
