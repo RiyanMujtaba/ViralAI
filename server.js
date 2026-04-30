@@ -1165,17 +1165,27 @@ app.post('/api/create-islamic', async (req, res) => {
     );
 
     // 9. Burn subtitles + optional custom overlay in one single pass
+    // Islamic layout (portrait):
+    //   h*0.25  — Arabic verse (large)
+    //   h*0.54  — English translation
+    //   h*0.82  — Surah / verse label
+    // Custom overlay is pinned to the very top strip (y=40) so it never
+    // collides with verse text regardless of what the user types.
     let vfFilter = dtFilter;
     if (overlay_text && overlay_text.trim()) {
       const ovLines     = overlay_text.trim().split('\n');
       const ovProcessed = await Promise.all(ovLines.map(l => isArabic(l) ? reshapeArabic(l) : Promise.resolve(l)));
-      const ovFilter    = overlayDrawtext(
-        ovProcessed.join('\n'),
-        overlay_pos || 'center',
-        parseInt(overlay_size) || 65,
-        overlay_color || '0xFFFFFF'
-      );
-      vfFilter = dtFilter + ',' + ovFilter;
+      const ovSize      = parseInt(overlay_size) || 52;
+      const ovColor     = overlay_color || '0xFFFFFF';
+      // Build per-line filters, stacking downward from y=40
+      const spacing = Math.round(ovSize * 1.35);
+      const ovFilter = ovProcessed.filter(l => l.trim()).map((line, i) => {
+        const font = isArabic(line) ? FONT_AR : FONT_EN;
+        const safe = line.replace(/\\/g,'\\\\').replace(/'/g,'\u2019').replace(/:/g,'\\:').replace(/,/g,'\\,').replace(/\[/g,'\\[').replace(/\]/g,'\\]').replace(/=/g,'\\=').replace(/;/g,'\\;');
+        const y = 40 + i * spacing;
+        return `drawtext=fontfile='${font}':text='${safe}':fontcolor=${ovColor}:fontsize=${ovSize}:x=(w-text_w)/2:y=${y}:borderw=4:bordercolor=black@0.85:fix_bounds=1`;
+      }).join(',');
+      if (ovFilter) vfFilter = dtFilter + ',' + ovFilter;
     }
 
     await spawnRun([
