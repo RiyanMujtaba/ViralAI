@@ -769,11 +769,27 @@ function httpsGetJSON(url, headers = {}) {
 }
 
 const PEXELS_QUERIES = {
-  stars:   'starry night sky dark',
-  rain:    'rain dark night',
-  candles: 'candles flame dark',
-  space:   'galaxy space milky way',
-  nature:  'dark forest nature peaceful',
+  stars:    'night sky stars milky way timelapse',
+  rain:     'rain drops window dark night',
+  candles:  'candle flame burning dark room',
+  space:    'galaxy nebula space stars',
+  nature:   'forest trees nature green peaceful',
+  ocean:    'ocean sea waves blue water',
+  waves:    'waves crashing shore beach water',
+  desert:   'desert sand dunes hot dry',
+  mountains:'mountain peak landscape scenic',
+  mosque:   'mosque islamic architecture dome minaret',
+  aurora:   'aurora borealis northern lights green sky',
+  river:    'river flowing water reflection',
+  clouds:   'storm clouds dramatic sky dark',
+  fire:     'campfire burning flames fire',
+  cave:     'cave dark underground rock',
+  fog:      'fog mist forest foggy morning',
+  sunset:   'sunset golden hour sky orange',
+  snow:     'snow falling winter white cold',
+  waterfal: 'waterfall falling water nature',
+  city:     'city night lights buildings skyline',
+  thunder:  'lightning bolt storm night sky',
 };
 
 function pexelsDownload(fileUrl, dst) {
@@ -796,18 +812,41 @@ function pexelsDownload(fileUrl, dst) {
 
 // ── Islamic Music ─────────────────────────────────────────────
 const AMBIENT_FILTERS = {
-  rain:      (d) => `anoisesrc=c=pink:a=0.9:d=${d},lowpass=f=900,highpass=f=80`,
-  heavyrain: (d) => `anoisesrc=c=white:a=0.95:d=${d},lowpass=f=1400,highpass=f=60`,
-  river:     (d) => `anoisesrc=c=white:a=0.8:d=${d},lowpass=f=1200,highpass=f=200`,
-  ocean:     (d) => `anoisesrc=c=pink:a=0.85:d=${d},lowpass=f=500,highpass=f=40`,
-  waterfall: (d) => `anoisesrc=c=white:a=0.9:d=${d},lowpass=f=4000,highpass=f=300`,
-  wind:      (d) => `anoisesrc=c=brown:a=0.9:d=${d},lowpass=f=350`,
-  storm:     (d) => `anoisesrc=c=brown:a=0.95:d=${d},lowpass=f=180`,
-  forest:    (d) => `anoisesrc=c=pink:a=0.5:d=${d},highpass=f=600,lowpass=f=7000`,
-  night:     (d) => `anoisesrc=c=white:a=0.35:d=${d},highpass=f=2500,lowpass=f=6000`,
-  calm:      (d) => `sine=frequency=432:d=${d}`,
-  deep:      (d) => `sine=frequency=174:d=${d}`,
-  peace:     (d) => `sine=frequency=528:d=${d}`,
+  // Nature — water
+  rain:       (d) => `anoisesrc=c=pink:a=0.9:d=${d},lowpass=f=900,highpass=f=80`,
+  heavyrain:  (d) => `anoisesrc=c=white:a=0.95:d=${d},lowpass=f=1400,highpass=f=60`,
+  drizzle:    (d) => `anoisesrc=c=pink:a=0.55:d=${d},lowpass=f=700,highpass=f=100`,
+  river:      (d) => `anoisesrc=c=white:a=0.8:d=${d},lowpass=f=1200,highpass=f=200`,
+  stream:     (d) => `anoisesrc=c=white:a=0.6:d=${d},lowpass=f=800,highpass=f=300`,
+  ocean:      (d) => `anoisesrc=c=pink:a=0.85:d=${d},lowpass=f=500,highpass=f=40`,
+  waves:      (d) => `anoisesrc=c=pink:a=0.7:d=${d},lowpass=f=350,highpass=f=30`,
+  waterfall:  (d) => `anoisesrc=c=white:a=0.9:d=${d},lowpass=f=4000,highpass=f=300`,
+  // Nature — wind & air
+  wind:       (d) => `anoisesrc=c=brown:a=0.9:d=${d},lowpass=f=350`,
+  breeze:     (d) => `anoisesrc=c=brown:a=0.55:d=${d},lowpass=f=500`,
+  storm:      (d) => `anoisesrc=c=brown:a=0.95:d=${d},lowpass=f=180`,
+  thunder:    (d) => `anoisesrc=c=brown:a=0.98:d=${d},lowpass=f=120`,
+  // Nature — ambient
+  forest:     (d) => `anoisesrc=c=pink:a=0.5:d=${d},highpass=f=600,lowpass=f=7000`,
+  birds:      (d) => `anoisesrc=c=white:a=0.3:d=${d},highpass=f=3000,lowpass=f=8000`,
+  night:      (d) => `anoisesrc=c=white:a=0.35:d=${d},highpass=f=2500,lowpass=f=6000`,
+  fire:       (d) => `anoisesrc=c=pink:a=0.7:d=${d},bandpass=f=400:width_type=o:w=3,volume=1.5`,
+  cave:       (d) => `anoisesrc=c=brown:a=0.4:d=${d},lowpass=f=250`,
+  desert:     (d) => `anoisesrc=c=brown:a=0.3:d=${d},lowpass=f=400,highpass=f=60`,
+  // Tones — healing / Solfeggio frequencies
+  calm:       (d) => `sine=frequency=432:d=${d}`,
+  deep:       (d) => `sine=frequency=174:d=${d}`,
+  peace:      (d) => `sine=frequency=528:d=${d}`,
+  healing:    (d) => `sine=frequency=396:d=${d}`,
+  clarity:    (d) => `sine=frequency=741:d=${d}`,
+  love:       (d) => `sine=frequency=639:d=${d}`,
+  awaken:     (d) => `sine=frequency=852:d=${d}`,
+  unity:      (d) => `sine=frequency=963:d=${d}`,
+  // Drones — deep ambient
+  drone1:     (d) => `aevalsrc='0.25*sin(2*PI*60*t)+0.15*sin(2*PI*120*t)':s=44100:d=${d}`,
+  drone2:     (d) => `aevalsrc='0.2*sin(2*PI*40*t)+0.12*sin(2*PI*80*t)+0.08*sin(2*PI*160*t)':s=44100:d=${d}`,
+  drone3:     (d) => `aevalsrc='0.18*sin(2*PI*55*t)+0.12*sin(2*PI*110*t)+0.08*sin(2*PI*220*t)':s=44100:d=${d}`,
+  dark:       (d) => `aevalsrc='0.22*sin(2*PI*30*t)+0.14*sin(2*PI*60*t)':s=44100:d=${d}`,
 };
 
 async function buildMusicTrack(musicType, musicUrl, duration, dst) {
@@ -836,11 +875,12 @@ async function downloadIslamicBg(preset, dst, orientation = 'portrait') {
   }
   const query = PEXELS_QUERIES[preset] || PEXELS_QUERIES.stars;
   const pexelsOrient = isLandscape ? 'landscape' : 'portrait';
-  const url = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=15&orientation=${pexelsOrient}&size=medium`;
+  const url = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=5&orientation=${pexelsOrient}&size=medium`;
   const data = await httpsGetJSON(url, { Authorization: PEXELS_KEY });
   if (!data.videos || !data.videos.length) throw new Error('No Pexels videos found for preset: ' + preset);
 
-  const video = data.videos[Math.floor(Math.random() * Math.min(data.videos.length, 10))];
+  // Pick from top 3 only — first results are most relevant to the query
+  const video = data.videos[Math.floor(Math.random() * Math.min(data.videos.length, 3))];
   const files = [...video.video_files].sort((a, b) => b.height - a.height);
   const file  = isLandscape
     ? (files.find(f => f.width >= 1280 && f.width > f.height) || files[0])
