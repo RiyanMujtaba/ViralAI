@@ -454,14 +454,14 @@ app.post('/api/create', upload.fields([
     const tmpVid = path.join(UPLOADS, `${id}_tmp.mp4`);
     const cs = getCropScale(orient);
     if (musicFile) {
-      await run(`${FFMPEG} -y -stream_loop -1 -t ${dur} -i "${bgFile}" -i "${audioFile}" -stream_loop -1 -t ${dur} -i "${musicFile}" -filter_complex "[0:v]${cs}[v];[1:a]volume=1.0[voice];[2:a]volume=0.12[music];[voice][music]amix=inputs=2:duration=first[a]" -map "[v]" -map "[a]" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
+      await run(`${FFMPEG} -y -stream_loop -1 -t ${dur} -i "${bgFile}" -i "${audioFile}" -stream_loop -1 -t ${dur} -i "${musicFile}" -filter_complex "[0:v]${cs},fps=30[v];[1:a]volume=1.0[voice];[2:a]volume=0.12[music];[voice][music]amix=inputs=2:duration=first[a]" -map "[v]" -map "[a]" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
     } else {
-      await run(`${FFMPEG} -y -stream_loop -1 -t ${dur} -i "${bgFile}" -i "${audioFile}" -filter_complex "[0:v]${cs}[v];[1:a]volume=1.0[a]" -map "[v]" -map "[a]" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
+      await run(`${FFMPEG} -y -stream_loop -1 -t ${dur} -i "${bgFile}" -i "${audioFile}" -filter_complex "[0:v]${cs},fps=30[v];[1:a]volume=1.0[a]" -map "[v]" -map "[a]" -t ${dur} -c:v libx264 -preset fast -crf 22 -c:a aac -ar 44100 -b:a 192k "${tmpVid}"`);
     }
 
     // 7. Pass 2 — burn subtitles onto the rendered video
     if (cues.length > 0) {
-      await run(`${FFMPEG} -y -i "${tmpVid}" -vf "ass='${assFile}'" -c:v libx264 -preset fast -crf 22 -c:a copy "${outFile}"`);
+      await run(`${FFMPEG} -y -i "${tmpVid}" -vf "ass='${assFile}',fps=30" -c:v libx264 -preset fast -crf 22 -c:a copy "${outFile}"`);
       tryDelete(tmpVid);
     } else {
       fs.renameSync(tmpVid, outFile);
